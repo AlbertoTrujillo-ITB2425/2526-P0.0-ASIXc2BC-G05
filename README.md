@@ -17,28 +17,28 @@
 
 ## 1. Introducció
 
-Aquest document recull la memòria tècnica del projecte **P0.0-ASIXc2gC-Gnn** corresponent al Mòdul 0379, Projecte intermodular d'administració de sistemes informàtics en xarxa. El projecte consisteix en el desplegament d’una infraestructura per a una aplicació multicapa que integra diversos serveis (Web Server, Monitor de xarxes, SSH, BBDD, DHCP, DNS, FTP) en diferents màquines virtuals i subxarxes, seguint el model de zones DMZ, Intranet i NAT.
+Aquest document recull la memòria tècnica del projecte **P0.0-ASIXc2BC-G05** corresponent al Mòdul 0379, Projecte Intermodular d'Administració de Sistemes Informàtics en Xarxa. L'objectiu principal és desplegar una infraestructura per a una aplicació multicapa que integra diversos serveis essencials (web, monitoratge de xarxes, SSH, BBDD, DHCP, DNS i FTP) en diferents màquines virtuals i subxarxes, seguint un model de segmentació per zones DMZ, Intranet i NAT.
 
 ---
 
 ## 2. Objectius
 
-- Preparar una infraestructura funcional per allotjar una aplicació multicapa.
-- Planificar i documentar totes les tasques del projecte.
-- Desplegar i configurar els serveis requerits (web, BBDD, DNS, DHCP, FTP…).
+- Dissenyar i desplegar una infraestructura funcional per allotjar una aplicació multicapa.
+- Planificar i documentar exhaustivament totes les tasques del projecte.
+- Instal·lar, configurar i posar en producció els serveis requerits (Web, BBDD, DNS, DHCP, FTP, etc.).
 - Carregar i visualitzar dades obertes a la base de dades.
-- Garantir l’accés centralitzat amb l’usuari `bchecker` a tots els sistemes.
-- Documentar l’arquitectura mitjançant un diagrama de xarxa.
+- Garantir l’accés centralitzat a tots els sistemes mitjançant l’usuari `bchecker`.
+- Documentar l’arquitectura mitjançant un diagrama de xarxa clar i complet.
 
 ---
 
 ## 3. Planificació del projecte
 
-La planificació s’ha realitzat utilitzant Proofhub, estructurant el treball en 3 sprints quinzenals de 10 hores cadascun. El backlog i la divisió de tasques han estat definits segons la nomenclatura i requeriments facilitats:
+La planificació s'ha realitzat utilitzant **Proofhub**, estructurant el treball en 3 sprints quinzenals de 10 hores cadascun. El backlog i la divisió de tasques han estat definits segons la nomenclatura i els requeriments especificats:
 
-- Sprints: 3 (2 setmanes cadascun, 5h/setmana)
-- Durada total: 6 setmanes (fins al 18/11)
-- Documentació i configuració versionats al repositori git: **P0.0-ASIXc2gC-Gnn**
+- **Sprints:** 3 (2 setmanes cadascun, 5 h/setmana)
+- **Durada total:** 6 setmanes (fins al 18/11)
+- **Gestió de documentació i configuració:** tot versionat al repositori git amb el nom **P0.0-ASIXc2BC-G05**
 
 ---
 
@@ -49,53 +49,12 @@ L’arquitectura desplegada es representa en el següent diagrama:
 ### Descàrrega de l'esquema
 
 Podeu descarregar el fitxer de l’esquema de xarxa aquí:  
-[Descarregar esquema de xarxa (Packet Tracer)](./2526-P0.0-ASIXc2BC-G05_EsquemaDeXarxa.pkt)
+[Descarregar esquema de xarxa (Packet Tracer)](https://drive.google.com/file/d/1atEO0mJYaNl4XfbM8BtlbaUDIN4p2D8S/view?usp=sharing)
 
 ### Visualització de l'esquema
 
 A continuació es mostra una imatge representativa de l’esquema de xarxa:
 
-![Esquema de Xarxa](./esquema_de_xarxa.png)
+![Esquema de Xarxa](https://github.com/user-attachments/assets/12fdae6a-c0b8-4ae6-8dcf-2a22dcaad1b4)
 
 ---
-
-## 5. Infraestructura desplegada
-
-**Xarxes:**
-- DMZ
-- Intranet
-- NAT
-
-**Dispositius principals:**
-- Router (R-NCC)
-- Web Server (W-NCC)
-- SSH Server
-- BBDD (B-NCC, MySQL, dades carregades)
-- DHCP Server
-- DNS Server (resolució de R-NCC i R)
-- FTP Server (F-NCC)
-- 2 PCs clients (1 Windows, 1 Linux)
-
----
-
-## 6. Configuració de serveis
-
-*Detall de la configuració de cada servei: usuaris, contrasenyes, configuració de xarxa, etc.*
-
----
-
-## 7. Proves realitzades
-
-- Aplicació de mostra per visualitzar contingut de la base de dades.
-- Validació de connectivitat i serveis desplegats.
-- (Opcional) Detecció i separació de dades susceptibles dins la base de dades.
-
----
-
-## 8. Conclusions i millores
-
-*Valoració dels resultats, dificultats trobades, propostes de millora…*
-
----
-
-> **Nota:** Cal pujar els fitxers `2526-P0.0-ASIXc2BC-G05_EsquemaDeXarxa.pkt` i la corresponent imatge `esquema_de_xarxa.png` al repositori per tal que siguin accessibles des d’aquest document.
