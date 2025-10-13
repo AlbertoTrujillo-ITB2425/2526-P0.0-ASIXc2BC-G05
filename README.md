@@ -34,12 +34,14 @@ Aquest document recull la memòria tècnica del projecte **P0.0-ASIXc2BC-G05** c
 
 ## 3. Planificació del projecte
 
-La planificació s'ha realitzat utilitzant **Proofhub**, estructurant el treball en 3 sprints quinzenals de 10 hores cadascun. El backlog i la divisió de tasques han estat definits segons la nomenclatura i els requeriments especificats:
+La planificació s'ha realitzat utilitzant la plataforma **Proofhub**, on s'ha estructurat el treball en 3 sprints quinzenals de 10 hores cadascun. El backlog i la divisió de tasques han estat definits segons la nomenclatura i els requeriments especificats.
 
 - **Sprints:** 3 (2 setmanes cadascun, 5 h/setmana)
 - **Durada total:** 6 setmanes (fins al 18/11)
 - **Gestió de documentació i configuració:** tot versionat al repositori git amb el nom **P0.0-ASIXc2BC-G05**
+- **Enllaç a Proofhub:** [Tauler del projecte a Proofhub](https://itecbcn.proofhub.com/bapplite/#app/todos/project-9335566085/list-269936034851)
 
+A la plataforma Proofhub es poden consultar les tasques, els sprints, el backlog i l'estat actual del projecte de manera col·laborativa.
 ---
 
 ## 4. Esquema de xarxa
