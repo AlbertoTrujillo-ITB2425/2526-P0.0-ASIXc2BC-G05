@@ -62,27 +62,6 @@ A continuació es mostra una imatge representativa de l’esquema de xarxa:
 ### DHCP Fitxer de configuració (`/etc/dhcp/dhcpd.conf`):
 <img width="785" height="491" alt="image" src="https://github.com/user-attachments/assets/81048a62-9b62-4856-a0a9-e2c9e9579f46" />
 
-```bash
-default-lease-time 600;
-max-lease-time 7200;
-authoritative;
-
-subnet 192.168.5.1 netmask 255.255.255.192 {
-  option routers 192.168.5.1;
-  option subnet-mask 255.255.255.192;
-  option domain-name-servers 192.168.5.30;
-}
-
-host PC0_CLIWIN {
-  hardware ethernet 52:54:00:73:7E:E6;
-  fixed-address 192.168.5.130;
-}
-
-host PC1_CLILIN {
-  hardware ethernet 66:77:88:99:AA:BB;
-  fixed-address 192.168.5.131;
-}
-```
 ### MySQL Creacio de la base de dades
 
 ```mysql
