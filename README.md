@@ -68,4 +68,4 @@ A continuació es mostra una imatge representativa de l’esquema de xarxa:
 
 
 ### MySQL Creacio de la base de dades
-<img width="1107" height="139" alt="image" src="https://github.com/user-attachments/assets/1395d2a1-893b-45e6-adbd-6148844a75e4" />
+<img width="707" height="527" alt="Captura de pantalla de 2025-10-14 16-32-05" src="https://github.com/user-attachments/assets/9bc4d813-f384-4563-afff-7484127ffb04" />
