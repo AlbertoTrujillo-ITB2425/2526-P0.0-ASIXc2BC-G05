@@ -62,8 +62,9 @@ A continuació es mostra una imatge representativa de l’esquema de xarxa:
 ### DHCP Fitxer de configuració (`/etc/dhcp/dhcpd.conf`):
 <img width="785" height="491" alt="image" src="https://github.com/user-attachments/assets/81048a62-9b62-4856-a0a9-e2c9e9579f46" />
 
-#### Aplicar IP CLIWIN
-<img width="394" height="609" alt="image" src="https://github.com/user-attachments/assets/416d0ece-f402-453e-94bf-5b63f4b9742f" />
+| Aplicar IP CLIWIN | Aplicar IP CLILIN |
+|:-----------------:|:----------------:|
+| <img width="394" height="609" alt="image" src="https://github.com/user-attachments/assets/416d0ece-f402-453e-94bf-5b63f4b9742f" /> | <img width="394" height="609" alt="image" src="https://github.com/user-attachments/assets/173f1964-2fa2-4087-8d5f-95b1444473c9" /> |
 
 
 ### MySQL Creacio de la base de dades
