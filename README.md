@@ -60,6 +60,7 @@ A continuació es mostra una imatge representativa de l’esquema de xarxa:
 ## 4.Configuració de serveis
 
 ### DHCP Fitxer de configuració (`/etc/dhcp/dhcpd.conf`):
+<img width="785" height="491" alt="image" src="https://github.com/user-attachments/assets/81048a62-9b62-4856-a0a9-e2c9e9579f46" />
 
 ```bash
 default-lease-time 600;
@@ -81,4 +82,9 @@ host PC1_CLILIN {
   hardware ethernet 66:77:88:99:AA:BB;
   fixed-address 192.168.5.131;
 }
+```
+### MySQL Creacio de la base de dades
+
+```mysql
+
 ```
