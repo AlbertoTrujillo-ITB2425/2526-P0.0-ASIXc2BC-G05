@@ -64,7 +64,7 @@ A continuació es mostra una imatge representativa de l’esquema de xarxa:
 
 | Aplicar IP CLIWIN | Aplicar IP CLILIN |
 |:-----------------:|:----------------:|
-| <img width="394" height="609" alt="image" src="https://github.com/user-attachments/assets/416d0ece-f402-453e-94bf-5b63f4b9742f" /> | <img width="394" height="609" alt="image" src="https://github.com/user-attachments/assets/173f1964-2fa2-4087-8d5f-95b1444473c9" /> |
+| <img width="394" height="609" alt="image" src="https://github.com/user-attachments/assets/416d0ece-f402-453e-94bf-5b63f4b9742f" /> | <img width="394" height="609" alt="image" src="" /> |
 
 
 ### MySQL Creacio de la base de dades
