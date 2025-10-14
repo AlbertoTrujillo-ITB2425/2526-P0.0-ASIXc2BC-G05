@@ -60,3 +60,30 @@ A continuació es mostra una imatge representativa de l’esquema de xarxa:
 ![Esquema de Xarxa](https://github.com/user-attachments/assets/12fdae6a-c0b8-4ae6-8dcf-2a22dcaad1b4)
 
 ---
+## 6.1. Configuració del servidor DHCP
+
+A continuació es detalla la configuració bàsica del servidor **DHCP** desplegat a la infraestructura. Aquest servei permet assignar adreces IP de manera dinàmica als dispositius de la xarxa segons la configuració establerta.
+
+### Fitxer de configuració (`/etc/dhcp/dhcpd.conf`):
+
+```bash
+default-lease-time 600;
+max-lease-time 7200;
+authoritative;
+
+subnet 192.168.5.1 netmask 255.255.255.192 {
+  option routers 192.168.5.1;
+  option subnet-mask 255.255.255.192;
+  option domain-name-servers 192.168.5.30;
+}
+
+host PC0_CLIWIN {
+  hardware ethernet 52:54:00:73:7E:E6;
+  fixed-address 192.168.5.130;
+}
+
+host PC1_CLILIN {
+  hardware ethernet 66:77:88:99:AA:BB;
+  fixed-address 192.168.5.131;
+}
+```
