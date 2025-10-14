@@ -44,16 +44,19 @@ A continuació es mostra una imatge representativa de l’esquema de xarxa:
 ## 3. Infraestructura desplegada
 
 ### Router R-NCC
-
+---
 ### DHCP Server
-
+---
 ### Database Server B-NCC
-
+---
 ### Web Server W-NCC
-
+---
 ### FIle Server F-NCC
+---
+### Clients CLIWIN & CLILIN
 
 
+---
 ## 4.Configuració de serveis
 
 ### DHCP Fitxer de configuració (`/etc/dhcp/dhcpd.conf`):
