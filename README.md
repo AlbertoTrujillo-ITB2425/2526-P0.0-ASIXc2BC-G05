@@ -178,12 +178,6 @@ A continuació es mostren fragments de configuració i explicacions per a cada s
   </div>
 </div>
 
-Taula d'aplicació d'IP als clients:
-
-| Aplicar IP CLIWIN | Aplicar IP CLILIN |
-|:-----------------:|:----------------:|
-| Imatge: CLIWIN amb IP assignada per DHCP (veure captura) | Imatge no disponible — descripció: sortida de `ip addr` mostrant la IP i `ip route` amb el gateway configurat. |
-
 ---
 
 ### MySQL Creacio de la base de dades
