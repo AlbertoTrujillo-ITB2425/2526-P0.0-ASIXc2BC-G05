@@ -46,14 +46,20 @@ A continuació es mostra una imatge representativa de l’esquema de xarxa:
 ### Router R-NCC
 ---
 ### DHCP Server
+<img width="845" height="622" alt="image" src="https://github.com/user-attachments/assets/5f981a11-8565-4214-b966-b415ec1f0aa3" />
+
 ---
 ### Database Server B-NCC
+<img width="845" height="653" alt="Captura de pantalla de 2025-10-20 15-09-37" src="https://github.com/user-attachments/assets/91df8564-9cf4-4e05-aa68-cafbcc95e472" />
+
 ---
 ### Web Server W-NCC
 ---
 ### FIle Server F-NCC
 ---
 ### Clients CLIWIN & CLILIN
+<img width="914" height="994" alt="image" src="https://github.com/user-attachments/assets/767c9532-9d66-4851-91b1-348b358e0889" />
+
 
 
 ---
