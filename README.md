@@ -68,7 +68,8 @@ A continuació es mostra una imatge representativa de l’esquema de xarxa:
 ## 4.Configuració de serveis
 
 ### DHCP Fitxer de configuració (`/etc/dhcp/dhcpd.conf`):
-<img width="711" height="442" alt="Captura de pantalla de 2025-10-20 15-20-49" src="https://github.com/user-attachments/assets/dd18e94b-fa10-467b-8ea2-f4089a116ff7" />
+<img width="771" height="517" alt="Captura de pantalla de 2025-10-20 15-21-49" src="https://github.com/user-attachments/assets/5088b146-d48d-46fe-9dce-777df3449ca7" />
+
 
 
 | Aplicar IP CLIWIN | Aplicar IP CLILIN |
