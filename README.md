@@ -5,10 +5,9 @@
 1. [Planificació del projecte](#planificació-del-projecte)
 2. [Esquema de xarxa](#esquema-de-xarxa)
     - [Descàrrega de l'esquema](#descàrrega-de-lesquema)
-    - [Visualització de l'esquema](#visualització-de-lesquema)
+    - [Visualització de l'esquema](#visualització-de-la-esquema)
 3. [Infraestructura desplegada](#infraestructura-desplegada)
 4. [Configuració de serveis](#configuració-de-serveis)
-
 
 ---
 
@@ -59,59 +58,74 @@ Descripció resumida:
 
 ## 3. Infraestructura desplegada
 
-He reorganitzat les captures per fer la lectura més amena: algunes imatges van en columna a la dreta, altres a l'esquerra, unes més petites i altres més grans, amb llegendes explicatives.
+He ajustat la disposició perquè, en aquesta secció, les explicacions quedin sempre al lateral esquerre i les fotos al lateral dret. Això s'aplica a cada subsecció: Router, DHCP, BBDD/Web, File Server i Clients.
 
 ### Router R-NCC
 
 <div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:flex-start;">
-  <figure style="flex:1 1 48%; margin:0;">
-    <!-- Si tens una imatge del router, canvia la URL -->
-    <img src="https://github.com/user-attachments/assets/placeholder-router.png" alt="Router R-NCC" style="width:100%; height:auto; border:1px solid #ddd; padding:4px;">
-    <figcaption style="font-size:0.9em; color:#444; margin-top:6px;">Router R-NCC — encaminament entre VLANs, rutes i NAT si cal.</figcaption>
-  </figure>
-
-  <div style="flex:1 1 48%; min-width:220px;">
-    <p style="margin-top:0;">Descripció del Router R-NCC:</p>
+  <!-- Text a l'esquerra -->
+  <div style="flex:1 1 48%; min-width:260px;">
+    <h4 style="margin-top:0;">Router R-NCC</h4>
+    <p>Descripció del Router R-NCC:</p>
     <ul>
       <li>Encamina les subxarxes internes i actua com a gateway per a sortida si cal.</li>
       <li>Interfícies amb IPs per a cada VLAN, rutes estàtiques i regles de tallafocs bàsiques.</li>
+      <li>Serveix com a punt de control per a polítiques d'accés entre VLANs i la xarxa de serveis.</li>
     </ul>
   </div>
+
+  <!-- Imatges a la dreta -->
+  <figure style="flex:1 1 48%; margin:0; text-align:right;">
+    <img src="https://github.com/user-attachments/assets/placeholder-router.png" alt="Router R-NCC" style="width:90%; height:auto; border:1px solid #ddd; padding:4px;">
+    <figcaption style="font-size:0.9em; color:#444; margin-top:6px;">Vista del router amb les interfícies i rutes configurades.</figcaption>
+  </figure>
 </div>
 
 ---
 
 ### DHCP Server
 
-<div style="display:flex; gap:1rem; flex-wrap:wrap;">
-  <figure style="flex:1 1 32%; margin:0;">
-    <img src="https://github.com/user-attachments/assets/5f981a11-8565-4214-b966-b415ec1f0aa3" alt="DHCP Server" style="width:100%; height:auto; border:1px solid #ddd; padding:4px;">
-    <figcaption style="font-size:0.85em; color:#444; margin-top:6px;">Interfície de configuració del servidor DHCP.</figcaption>
-  </figure>
-    <img src="https://github.com/user-attachments/assets/placeholder-clilin.png" alt="Aplicar IP CLILIN" style="width:48%; height:auto; border:1px solid #ddd; padding:4px;">
-    <figcaption style="font-size:0.85em; color:#444; margin-top:6px;">A l'esquerra: CLIWIN amb IP aplicada. A la dreta: CLILIN (captura no disponible, s'ha descrit en text).</figcaption>
+<div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:flex-start;">
+  <!-- Text a l'esquerra -->
+  <div style="flex:1 1 48%; min-width:260px;">
+    <h4 style="margin-top:0;">DHCP Server</h4>
+    <p>El servidor DHCP proporciona adreces IP dinàmiques als clients de les VLANs definides. Principals punts:</p>
+    <ul>
+      <li>Rangs d'IP per subxarxa i reserves per a servidors i dispositius de xarxa.</li>
+      <li>Opcions com DNS, gateway i temps de concessió (lease).</li>
+      <li>S'han evitat solapaments amb IPs estàtiques.</li>
+    </ul>
+  </div>
+
+  <!-- Imatges a la dreta: una gran i una petita sota -->
+  <figure style="flex:1 1 48%; margin:0; text-align:right;">
+    <img src="https://github.com/user-attachments/assets/5f981a11-8565-4214-b966-b415ec1f0aa3" alt="DHCP Server" style="width:70%; height:auto; border:1px solid #ddd; padding:4px; display:block; margin-left:auto;">
+    <img src="https://github.com/user-attachments/assets/416d0ece-f402-453e-94bf-5b63f4b9742f" alt="Aplicar IP CLIWIN" style="width:45%; height:auto; border:1px solid #ddd; padding:4px; display:inline-block; margin-top:8px;">
+    <figcaption style="font-size:0.85em; color:#444; margin-top:6px;">Configuració del DHCP i exemple CLIWIN amb IP aplicada (a la dreta, CLILIN descrit en text si la captura no està disponible).</figcaption>
   </figure>
 </div>
-
-Explicació:
-- Rangs d'adreces, opcions i reserves per a servidors estan en el fitxer dhcpd.conf (veure Secció 4).
 
 ---
 
 ### Database Server B-NCC & Web Server W-NCC
 
 <div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:flex-start;">
-  <figure style="flex:1 1 48%; margin:0;">
-    <img src="https://github.com/user-attachments/assets/91df8564-9cf4-4e05-aa68-cafbcc95e472" alt="Database Server B-NCC" style="width:100%; height:auto; border:1px solid #ddd; padding:4px;">
-    <figcaption style="font-size:0.85em; color:#444; margin-top:6px;">Servidor BBDD: estat i consultes de prova.</figcaption>
-  </figure>
+  <!-- Text a l'esquerra -->
+  <div style="flex:1 1 48%; min-width:260px;">
+    <h4 style="margin-top:0;">Database Server B-NCC & Web Server W-NCC</h4>
+    <p>Descripció i funcions:</p>
+    <ul>
+      <li>B-NCC: allotja la base de dades principal (MySQL/MariaDB), còpies de seguretat i permisos limitats.</li>
+      <li>W-NCC: servidor web que serveix contingut dinàmic i es connecta amb la BBDD mitjançant l'usuari aplicatiu.</li>
+      <li>Proves realitzades: consultes de prova, connexions des del web i comprovació de rutes entre servidors.</li>
+    </ul>
+  </div>
 
-  <figure style="flex:1 1 48%; margin:0;">
-    <div style="display:flex; gap:0.5rem; flex-direction:column;">
-      <img src="https://github.com/user-attachments/assets/af5c4b39-2aa8-4296-9ccc-3d070ed0ceb5" alt="Web Server 1" style="width:100%; height:auto; border:1px solid #ddd; padding:4px;">
-      <img src="https://github.com/user-attachments/assets/65501edd-9235-4c96-b090-8cf65ce86956" alt="Web Server 2" style="width:100%; height:auto; border:1px solid #ddd; padding:4px; margin-top:6px;">
-      <figcaption style="font-size:0.85em; color:#444; margin-top:6px;">Servidor Web: pàgina inicial i proves d'accés i connexió amb la BBDD.</figcaption>
-    </div>
+  <!-- Imatges a la dreta (apilades) -->
+  <figure style="flex:1 1 48%; margin:0; text-align:right;">
+    <img src="https://github.com/user-attachments/assets/91df8564-9cf4-4e05-aa68-cafbcc95e472" alt="Database Server B-NCC" style="width:80%; height:auto; border:1px solid #ddd; padding:4px; display:block; margin-left:auto;">
+    <img src="https://github.com/user-attachments/assets/af5c4b39-2aa8-4296-9ccc-3d070ed0ceb5" alt="Web Server 1" style="width:80%; height:auto; border:1px solid #ddd; padding:4px; display:block; margin-left:auto; margin-top:8px;">
+    <figcaption style="font-size:0.85em; color:#444; margin-top:6px;">Estat i consultes de la BBDD; pàgina web i proves d'accés.</figcaption>
   </figure>
 </div>
 
@@ -119,41 +133,57 @@ Explicació:
 
 ### File Server F-NCC
 
-<div style="display:flex; gap:1rem; flex-wrap:wrap;">
-  <figure style="flex:1 1 32%; margin:0;">
-    <img src="https://github.com/user-attachments/assets/211a4257-f1f7-44bf-867b-4d86b34adac8" alt="File Server 1" style="width:100%; height:auto; border:1px solid #ddd; padding:4px;">
-  </figure>
+<div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:flex-start;">
+  <!-- Text a l'esquerra -->
+  <div style="flex:1 1 48%; min-width:260px;">
+    <h4 style="margin-top:0;">File Server F-NCC</h4>
+    <p>El servidor de fitxers proporciona compartir SMB/CIFS, gestió d'usuaris i permisos. Punts clau:</p>
+    <ul>
+      <li>Estructura de directoris i permisos definits per grups d'usuaris.</li>
+      <li>Quotas, còpies de seguretat i comprovacions d'integritat implementades.</li>
+      <li>Proves des de clients per validar lectura i escriptura amb diferents usuaris.</li>
+    </ul>
+  </div>
 
-  <figure style="flex:1 1 32%; margin:0;">
-    <img src="https://github.com/user-attachments/assets/b4742b48-9bf8-4428-8813-ab1be867ebdc" alt="File Server 2" style="width:100%; height:auto; border:1px solid #ddd; padding:4px;">
+  <!-- Galeria dreta amb 3 imatges alineades verticalment -->
+  <figure style="flex:1 1 48%; margin:0; text-align:right;">
+    <img src="https://github.com/user-attachments/assets/211a4257-f1f7-44bf-867b-4d86b34adac8" alt="File Server 1" style="width:70%; height:auto; border:1px solid #ddd; padding:4px; display:block; margin-left:auto;">
+    <img src="https://github.com/user-attachments/assets/b4742b48-9bf8-4428-8813-ab1be867ebdc" alt="File Server 2" style="width:70%; height:auto; border:1px solid #ddd; padding:4px; display:block; margin-left:auto; margin-top:8px;">
+    <img src="https://github.com/user-attachments/assets/1bbe8d27-f2f8-4d51-90b4-1d4010cf4fb3" alt="File Server 4" style="width:70%; height:auto; border:1px solid #ddd; padding:4px; display:block; margin-left:auto; margin-top:8px;">
+    <figcaption style="font-size:0.85em; color:#444; margin-top:6px;">Estructura de directoris, permisos i exemples d'accés des de clients.</figcaption>
   </figure>
-
-  <figure style="flex:1 1 32%; margin:0;">
-    <img src="https://github.com/user-attachments/assets/1bbe8d27-f2f8-4d51-90b4-1d4010cf4fb3" alt="File Server 4" style="width:100%; height:auto; border:1px solid #ddd; padding:4px;">
-  </figure>
-
-  <figcaption style="font-size:0.85em; color:#444; margin-top:6px;">Servidor de fitxers: estructura de directoris, permisos i exemples d'accés des de clients.</figcaption>
 </div>
 
 ---
 
 ### Clients CLIWIN & CLILIN
 
-<div style="display:flex; gap:1rem; flex-wrap:wrap;">
-  <figure style="flex:1 1 48%; margin:0;">
-    <img src="https://github.com/user-attachments/assets/caf48c54-ff97-4b35-a357-fea9f64cbae5" alt="Clients CLI 1" style="width:100%; height:auto; border:1px solid #ddd; padding:4px;">
-    <figcaption style="font-size:0.85em; color:#444; margin-top:6px;">CLIWIN: obtenció d'IP via DHCP i proves de connectivitat.</figcaption>
-  </figure>
+<div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:flex-start;">
+  <!-- Text a l'esquerra -->
+  <div style="flex:1 1 48%; min-width:260px;">
+    <h4 style="margin-top:0;">Clients CLIWIN & CLILIN</h4>
+    <p>Proves i comportament dels clients:</p>
+    <ul>
+      <li>CLIWIN: obtenció d'IP via DHCP, ping a servidors i accés a recursos compartits.</li>
+      <li>CLILIN: comandes `ip addr`, `ip route`, `ping` i muntatge de comparticions SMB/NFS segons configuració.</li>
+      <li>Validació de permisos i connectivitat en diferents escenaris.</li>
+    </ul>
+  </div>
 
-  <figure style="flex:1 1 48%; margin:0;">
-    <img src="https://github.com/user-attachments/assets/a0ccc30e-6beb-4853-978c-330ec4e448c9" alt="Clients CLI 2" style="width:100%; height:auto; border:1px solid #ddd; padding:4px;">
-    <figcaption style="font-size:0.85em; color:#444; margin-top:6px;">CLILIN: comandes `ip addr`, `ping` i muntatge de recursos compartits.</figcaption>
+  <!-- Imatges a la dreta, dues columnas petites -->
+  <figure style="flex:1 1 48%; margin:0; text-align:right;">
+    <div style="display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap;">
+      <img src="https://github.com/user-attachments/assets/caf48c54-ff97-4b35-a357-fea9f64cbae5" alt="Clients CLI 1" style="width:48%; height:auto; border:1px solid #ddd; padding:4px;">
+      <img src="https://github.com/user-attachments/assets/a0ccc30e-6beb-4853-978c-330ec4e448c9" alt="Clients CLI 2" style="width:48%; height:auto; border:1px solid #ddd; padding:4px;">
+      <img src="https://github.com/user-attachments/assets/6e622666-f19e-4617-b766-fc59e595a6a2" alt="Clients CLI 3" style="width:48%; height:auto; border:1px solid #ddd; padding:4px; margin-top:8px;">
+    </div>
+    <figcaption style="font-size:0.85em; color:#444; margin-top:6px;">Proves de connectivitat i configuració de xarxa als clients Windows i Linux.</figcaption>
   </figure>
 </div>
 
 ---
 
-## 4.Configuració de serveis
+## 4. Configuració de serveis
 
 A continuació es mostren fragments de configuració i explicacions per a cada servei implementat, junt amb captures quan és rellevant.
 
