@@ -54,6 +54,7 @@ A continuació es mostra una imatge representativa de l’esquema de xarxa:
 
 ---
 ### Web Server W-NCC
+<img width="1038" height="416" alt="Captura de pantalla de 2025-10-20 15-51-49" src="https://github.com/user-attachments/assets/af5c4b39-2aa8-4296-9ccc-3d070ed0ceb5" />
 <img width="809" height="279" alt="Captura de pantalla de 2025-10-13 16-32-50" src="https://github.com/user-attachments/assets/65501edd-9235-4c96-b090-8cf65ce86956" />
 
 
