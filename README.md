@@ -59,7 +59,7 @@ A continuació es mostra una imatge representativa de l’esquema de xarxa:
 
 ---
 ### FIle Server F-NCC
-<img width="809" height="469" alt="Captura de pantalla de 2025-10-13 16-31-13" src="https://github.com/user-attachments/assets/bb6df879-1331-4997-a5e8-f0c07813ca54" />
+<img width="715" height="482" alt="Captura de pantalla de 2025-10-13 17-22-09" src="https://github.com/user-attachments/assets/211a4257-f1f7-44bf-867b-4d86b34adac8" />
 <img width="746" height="359" alt="Captura de pantalla de 2025-10-13 17-33-34" src="https://github.com/user-attachments/assets/b4742b48-9bf8-4428-8813-ab1be867ebdc" />
 <img width="361" height="53" alt="Captura de pantalla de 2025-10-13 17-35-11" src="https://github.com/user-attachments/assets/8a0b340f-1614-438c-8c9f-f7cfbe74cb8c" />
 
