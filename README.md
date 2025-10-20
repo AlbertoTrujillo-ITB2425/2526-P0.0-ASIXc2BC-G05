@@ -67,6 +67,9 @@ A continuació es mostra una imatge representativa de l’esquema de xarxa:
 ---
 ### Clients CLIWIN & CLILIN
 <img width="914" height="304" alt="image" src="https://github.com/user-attachments/assets/caf48c54-ff97-4b35-a357-fea9f64cbae5" />
+<img width="738" height="431" alt="Captura de pantalla de 2025-10-20 15-40-37" src="https://github.com/user-attachments/assets/61fb0046-71a4-4c04-a676-cf5ab54a2965" />
+<img width="984" height="511" alt="Captura de pantalla de 2025-10-20 15-41-23" src="https://github.com/user-attachments/assets/a0ccc30e-6beb-4853-978c-330ec4e448c9" />
+<img width="745" height="512" alt="Captura de pantalla de 2025-10-20 15-41-54" src="https://github.com/user-attachments/assets/6e622666-f19e-4617-b766-fc59e595a6a2" />
 
 
 
