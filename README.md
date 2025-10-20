@@ -5,7 +5,7 @@
 1. [Planificació del projecte](#planificació-del-projecte)
 2. [Esquema de xarxa](#esquema-de-xarxa)
     - [Descàrrega de l'esquema](#descàrrega-de-lesquema)
-    - [Visualització de l'esquema](#visualització-de-la-esquema)
+    - [Visualització de l'esquema](#visualització-de-lesquema)
 3. [Infraestructura desplegada](#infraestructura-desplegada)
 4. [Configuració de serveis](#configuració-de-serveis)
 
@@ -145,10 +145,12 @@ He ajustat la disposició perquè, en aquesta secció, les explicacions quedin s
     </ul>
   </div>
 
-  <!-- Galeria dreta amb 3 imatges alineades verticalment -->
+  <!-- Galeria dreta amb 3 imatges alineades verticalment; text intermig inserit perquè hi ha >2 fotos -->
   <figure style="flex:1 1 48%; margin:0; text-align:right;">
     <img src="https://github.com/user-attachments/assets/211a4257-f1f7-44bf-867b-4d86b34adac8" alt="File Server 1" style="width:70%; height:auto; border:1px solid #ddd; padding:4px; display:block; margin-left:auto;">
     <img src="https://github.com/user-attachments/assets/b4742b48-9bf8-4428-8813-ab1be867ebdc" alt="File Server 2" style="width:70%; height:auto; border:1px solid #ddd; padding:4px; display:block; margin-left:auto; margin-top:8px;">
+    <!-- Text inserit entre la 2a i la 3a imatge per millorar llegibilitat -->
+    <p style="font-size:0.85em; color:#444; margin:12px 0;">Exemples d'eines d'administració i comprovacions: es mostren captures de la gestió de quotas, processos de còpia de seguretat i eines d'integritat (checksum/snapshots).</p>
     <img src="https://github.com/user-attachments/assets/1bbe8d27-f2f8-4d51-90b4-1d4010cf4fb3" alt="File Server 4" style="width:70%; height:auto; border:1px solid #ddd; padding:4px; display:block; margin-left:auto; margin-top:8px;">
     <figcaption style="font-size:0.85em; color:#444; margin-top:6px;">Estructura de directoris, permisos i exemples d'accés des de clients.</figcaption>
   </figure>
@@ -170,12 +172,16 @@ He ajustat la disposició perquè, en aquesta secció, les explicacions quedin s
     </ul>
   </div>
 
-  <!-- Imatges a la dreta, dues columnas petites -->
+  <!-- Imatges a la dreta, ara amb text entre la segona i la tercera imatge perquè hi ha >2 fotos -->
   <figure style="flex:1 1 48%; margin:0; text-align:right;">
     <div style="display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap;">
       <img src="https://github.com/user-attachments/assets/caf48c54-ff97-4b35-a357-fea9f64cbae5" alt="Clients CLI 1" style="width:48%; height:auto; border:1px solid #ddd; padding:4px;">
       <img src="https://github.com/user-attachments/assets/a0ccc30e-6beb-4853-978c-330ec4e448c9" alt="Clients CLI 2" style="width:48%; height:auto; border:1px solid #ddd; padding:4px;">
-      <img src="https://github.com/user-attachments/assets/6e622666-f19e-4617-b766-fc59e595a6a2" alt="Clients CLI 3" style="width:48%; height:auto; border:1px solid #ddd; padding:4px; margin-top:8px;">
+    </div>
+    <!-- Text intermig que separa les captures per millorar la lectura quan hi ha més de 2 -->
+    <p style="font-size:0.85em; color:#444; margin:12px 0; text-align:right;">Captures de proves: configuracions d'interfícies, resultats de ping i muntatges de comparticions des de sistemes Windows i Linux.</p>
+    <div style="display:flex; justify-content:flex-end;">
+      <img src="https://github.com/user-attachments/assets/6e622666-f19e-4617-b766-fc59e595a6a2" alt="Clients CLI 3" style="width:48%; height:auto; border:1px solid #ddd; padding:4px;">
     </div>
     <figcaption style="font-size:0.85em; color:#444; margin-top:6px;">Proves de connectivitat i configuració de xarxa als clients Windows i Linux.</figcaption>
   </figure>
