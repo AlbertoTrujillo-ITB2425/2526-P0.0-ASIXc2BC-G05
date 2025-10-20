@@ -54,8 +54,16 @@ A continuació es mostra una imatge representativa de l’esquema de xarxa:
 
 ---
 ### Web Server W-NCC
+<img width="809" height="279" alt="Captura de pantalla de 2025-10-13 16-32-50" src="https://github.com/user-attachments/assets/65501edd-9235-4c96-b090-8cf65ce86956" />
+
+
 ---
 ### FIle Server F-NCC
+<img width="809" height="469" alt="Captura de pantalla de 2025-10-13 16-31-13" src="https://github.com/user-attachments/assets/bb6df879-1331-4997-a5e8-f0c07813ca54" />
+<img width="746" height="359" alt="Captura de pantalla de 2025-10-13 17-33-34" src="https://github.com/user-attachments/assets/b4742b48-9bf8-4428-8813-ab1be867ebdc" />
+<img width="361" height="53" alt="Captura de pantalla de 2025-10-13 17-35-11" src="https://github.com/user-attachments/assets/8a0b340f-1614-438c-8c9f-f7cfbe74cb8c" />
+
+
 ---
 ### Clients CLIWIN & CLILIN
 <img width="914" height="304" alt="image" src="https://github.com/user-attachments/assets/caf48c54-ff97-4b35-a357-fea9f64cbae5" />
