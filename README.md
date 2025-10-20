@@ -88,9 +88,6 @@ He reorganitzat les captures per fer la lectura més amena: algunes imatges van 
     <img src="https://github.com/user-attachments/assets/5f981a11-8565-4214-b966-b415ec1f0aa3" alt="DHCP Server" style="width:100%; height:auto; border:1px solid #ddd; padding:4px;">
     <figcaption style="font-size:0.85em; color:#444; margin-top:6px;">Interfície de configuració del servidor DHCP.</figcaption>
   </figure>
-
-  <figure style="flex:1 1 64%; margin:0;">
-    <img src="https://github.com/user-attachments/assets/416d0ece-f402-453e-94bf-5b63f4b9742f" alt="Aplicar IP CLIWIN" style="width:48%; height:auto; border:1px solid #ddd; padding:4px; margin-right:2%;">
     <img src="https://github.com/user-attachments/assets/placeholder-clilin.png" alt="Aplicar IP CLILIN" style="width:48%; height:auto; border:1px solid #ddd; padding:4px;">
     <figcaption style="font-size:0.85em; color:#444; margin-top:6px;">A l'esquerra: CLIWIN amb IP aplicada. A la dreta: CLILIN (captura no disponible, s'ha descrit en text).</figcaption>
   </figure>
