@@ -58,7 +58,8 @@ A continuació es mostra una imatge representativa de l’esquema de xarxa:
 ### FIle Server F-NCC
 ---
 ### Clients CLIWIN & CLILIN
-<img width="914" height="930" alt="image" src="https://github.com/user-attachments/assets/e59e483c-6cdd-4038-8556-88c7e483bd8a" />
+<img width="914" height="304" alt="image" src="https://github.com/user-attachments/assets/caf48c54-ff97-4b35-a357-fea9f64cbae5" />
+
 
 
 
