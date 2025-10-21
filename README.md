@@ -33,8 +33,7 @@ La topologia usa el **router R-NCC** com a encaminador central amb **servidors a
 ## 3. Infraestructura desplegada
 
 ### Router R-NCC
-Text box — Descripción breve:
-- Función: encaminador entre subxarxes, gateway de sortida, punt de control entre VLANs i la xarxa de serveis.
+- Funció: encaminador entre subxarxes, gateway de sortida, punt de control entre VLANs i la xarxa de serveis.
 - Fitxer complet: ./files/router_r-ncc.conf
 
 Text box — Configuració curta:
@@ -58,19 +57,35 @@ Text box — Descripción breve:
 - Funció: assigna adreces IP dinàmiques per les VLANs, amb reserves per servidors i dispositius.
 - Fitxer complet: ./files/dhcpd.conf
 
-Text box — Snippet (dhcpd.conf):
+Fitxer de  configuracio /etc/dhcp/dhcpd.conf(dhcpd.conf):
 ```
-option domain-name-servers 8.8.8.8;
+option domain-name "example.org";
+option domain-name-servers ns1.example.org, ns2.example.org;
+
 default-lease-time 600;
 max-lease-time 7200;
 
-subnet 192.168.10.0 netmask 255.255.255.0 {
- range 192.168.10.50 192.168.10.200;
- option routers 192.168.10.1;
+ddns-update-style none;
+
+
+default-lease-time 600;
+max-lease-time 7200;
+authoritative;
+
+subnet 192.168.5.0 netmask 255.255.255.0 {
+  option routers 192.168.5.1;
+  option subnet-mask 255.255.255.0;
+  option domain-name-servers 192.168.5.30;
 }
-host db-server {
- hardware ethernet aa:bb:cc:dd:ee:ff;
- fixed-address 192.168.10.11;
+
+host PC0_CLIWIN {
+  hardware ethernet 52:54:00:1E:47:7A; #Cambia per la MAC del teu client Windows
+  fixed-address 192.168.5.130; 
+}
+
+host PC1_CLILIN {
+  hardware ethernet 52:54:00:39:be:b1; #Cambia per la MAC del teu client linux
+  fixed-address 192.168.5.131;
 }
 ```
 
