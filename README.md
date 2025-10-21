@@ -36,71 +36,30 @@ La topologia usa el **router R-NCC** com a encaminador central amb **servidors a
 - Funció: encaminador entre subxarxes, gateway de sortida, punt de control entre VLANs i la xarxa de serveis.
 - Fitxer complet: ./files/router_r-ncc.conf
 
-Text box — Configuració curta:
-```
-interface GigabitEthernet0/0
- description VLAN-10 (Admin)
- ip address 192.168.10.1 255.255.255.0
-!
-interface GigabitEthernet0/1
- description VLAN-20 (Usuaris)
- ip address 192.168.20.1 255.255.255.0
-!
-ip route 0.0.0.0 0.0.0.0 203.0.113.1
-access-list 100 permit ip 192.168.10.0 0.0.0.255 192.168.20.0 0.0.0.255
-```
-
----
-
 ### DHCP Server
 Text box — Descripción breve:
 - Funció: assigna adreces IP dinàmiques per les VLANs, amb reserves per servidors i dispositius.
 - Fitxer complet: ./files/dhcpd.conf
 
-Fitxer de  configuracio /etc/dhcp/dhcpd.conf(dhcpd.conf):
-```
-
-```
-
----
-
-### Database Server B-NCC & Web Server W-NCC
-Text box — Descripción breve:
+### Database Server B-NCC:
 - B-NCC: servidor de base de dades (MySQL/MariaDB) amb còpies de seguretat i permisos restringits.
-- W-NCC: servidor web que serveix aplicació i es connecta a B-NCC amb usuari d'aplicació.
+
 - Fitxers: ./files/mysql_init.sql, ./files/backup_mysql.sh, ./files/webserver_config.conf
 
-Text box — Snippets:
-MySQL inic:
-```
-CREATE DATABASE aplicacio_db;
-CREATE USER 'appuser'@'%' IDENTIFIED BY 'strong_password';
-GRANT SELECT, INSERT, UPDATE, DELETE ON aplicacio_db.* TO 'appuser'@'%';
-FLUSH PRIVILEGES;
-```
-Connexió web:
-```
-DB_HOST=192.168.10.11
-DB_NAME=aplicacio_db
-DB_USER=appuser
-DB_PASS=strong_password
-```
+### Web Server W-NCC
+- Funció: servidor que serveix aplicació i es connecta amb B-NCC amb usuari d'aplicació.
+- Estructura
+  public/: arxius servits pel servidor web (DocumentRoot)
+  src/: codi font (models, controllers, helpers)
+  config/: configuració (config.php). No commetis secrets.
+  sql/: DDL i scripts d'inicialització
+  logs/: logs d'execució (ignorar a git)
 
 ---
 
 ### File Server F-NCC
-Text box — Nota:
-- Samba no s'utilitza en aquest projecte (segons indicació). L'accés a fitxers està preveient-se via NFS i/o SFTP.
-- Fitxers: ./files/exports_nfs.conf, ./files/setup_quotas.sh
 
-Text box — Exemple exports NFS:
-```
-/srv/files 192.168.10.0/24(rw,sync,no_subtree_check)
-```
-
-Text box — Quotes / permisos:
-- Script per crear directoris, grups i aplicar quotes: ./files/setup_quotas.sh
-
+- Funció: poder compartir fitchers a la xarxa amb altres usuaris corporatius o clients a traves de la DMZ
 ---
 
 ### Clients (CLIWIN i CLILIN)
