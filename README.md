@@ -59,34 +59,7 @@ Text box — Descripción breve:
 
 Fitxer de  configuracio /etc/dhcp/dhcpd.conf(dhcpd.conf):
 ```
-option domain-name "example.org";
-option domain-name-servers ns1.example.org, ns2.example.org;
 
-default-lease-time 600;
-max-lease-time 7200;
-
-ddns-update-style none;
-
-
-default-lease-time 600;
-max-lease-time 7200;
-authoritative;
-
-subnet 192.168.5.0 netmask 255.255.255.0 {
-  option routers 192.168.5.1;
-  option subnet-mask 255.255.255.0;
-  option domain-name-servers 192.168.5.30;
-}
-
-host PC0_CLIWIN {
-  hardware ethernet 52:54:00:1E:47:7A; #Cambia per la MAC del teu client Windows
-  fixed-address 192.168.5.130; 
-}
-
-host PC1_CLILIN {
-  hardware ethernet 52:54:00:39:be:b1; #Cambia per la MAC del teu client linux
-  fixed-address 192.168.5.131;
-}
 ```
 
 ---
@@ -142,9 +115,36 @@ Text box — Descripció breu:
 A continuació es mostren fragments de configuració i explicacions per a cada servei implementat.
 
 ### DHCP fitxer de configuració (/etc/dhcp/dhcpd.conf)
+``` bash
+option domain-name "example.org";
+option domain-name-servers ns1.example.org, ns2.example.org;
 
-![Configuració DHCP (dhcpd.conf)](https://github.com/user-attachments/assets/a26df952-47a8-4a5e-9c8d-e798f4a00059)
-</div>
+default-lease-time 600;
+max-lease-time 7200;
+
+ddns-update-style none;
+
+
+default-lease-time 600;
+max-lease-time 7200;
+authoritative;
+
+subnet 192.168.5.0 netmask 255.255.255.0 {
+  option routers 192.168.5.1;
+  option subnet-mask 255.255.255.0;
+  option domain-name-servers 192.168.5.30;
+}
+
+host PC0_CLIWIN {
+  hardware ethernet 52:54:00:1E:47:7A; #Cambia per la MAC del teu client Windows
+  fixed-address 192.168.5.130; 
+}
+
+host PC1_CLILIN {
+  hardware ethernet 52:54:00:39:be:b1; #Cambia per la MAC del teu client linux
+  fixed-address 192.168.5.131;
+}
+```
 
 El fitxer defineix **subxarxes**, **rangs d’IP** i **opcions globals** com **DNS** i **gateway**. Inclou **reserves** per a servidors i dispositius de xarxa (exemple: `option domain-name-servers 8.8.8.8;`).
 
