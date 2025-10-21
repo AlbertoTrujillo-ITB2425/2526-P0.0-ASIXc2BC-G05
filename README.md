@@ -48,7 +48,7 @@ Text box — Descripción breve:
 
 ### Web Server W-NCC
 - Funció: servidor que serveix aplicació i es connecta amb B-NCC amb usuari d'aplicació.
-- Estructura
+- ***Estructura***:
 - public/: arxius servits pel servidor web (DocumentRoot)
 - src/: codi font (models, controllers, helpers)
 - config/: configuració (config.php). No commetis secrets.
