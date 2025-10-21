@@ -108,15 +108,49 @@ host PC1_CLILIN {
 El fitxer defineix **subxarxes**, **rangs d’IP** i **opcions globals** com **DNS** i **gateway**. Inclou **reserves** per a servidors i dispositius de xarxa (exemple: `option domain-name-servers 8.8.8.8;`).
 
 ### MySQL creació de la base de dades
-
-![Creació BBDD (sentències SQL)](https://github.com/user-attachments/assets/9bc4d813-f384-4563-afff-7484127ffb04)
-</div>
-
-Exemples d’ordres utilitzades per crear la base de dades i l’usuari aplicatiu:
-
 ```sql
-CREATE DATABASE aplicacio_db;
-CREATE USER 'appuser'@'%' IDENTIFIED BY 'strong_password';
-GRANT SELECT, INSERT, UPDATE, DELETE ON aplicacio_db.* TO 'appuser'@'%';
-FLUSH PRIVILEGES;
+CREATE DATABASE Educacio;
+
+mysql> CREATE TABLE equipaments_educacio (
+    ->     register_id INTEGER PRIMARY KEY,
+    ->     name TEXT,
+    ->     institution_id TEXT,
+    ->     institution_name TEXT,
+    ->     created TEXT,
+    ->     modified TEXT,
+    ->     addresses_roadtype_id TEXT,
+    ->     addresses_roadtype_name TEXT,
+    ->     addresses_road_id INTEGER,
+    ->     addresses_road_name TEXT,
+    ->     addresses_start_street_number TEXT,
+    ->     addresses_end_street_number TEXT,
+    ->     addresses_neighborhood_id TEXT,
+    ->     addresses_neighborhood_name TEXT,
+    ->     addresses_district_id TEXT,
+    ->     addresses_district_name TEXT,
+    ->     addresses_zip_code TEXT,
+    ->     addresses_town TEXT,
+    ->     addresses_main_address INTEGER,
+    ->     addresses_type TEXT,
+    ->     values_id INTEGER,
+    ->     values_attribute_id INTEGER,
+    ->     values_category TEXT,
+    ->     values_attribute_name TEXT,
+    ->     values_value TEXT,
+    ->     values_outstanding INTEGER,
+    ->     values_description TEXT,
+    ->     secondary_filters_id INTEGER,
+    ->     secondary_filters_name TEXT,
+    ->     secondary_filters_fullpath TEXT,
+    ->     secondary_filters_tree TEXT,
+    ->     secondary_filters_asia_id TEXT,
+    ->     geo_epgs_25831_x REAL,
+    ->     geo_epgs_25831_y REAL,
+    ->     geo_epgs_4326_lat REAL,
+    ->     geo_epgs_4326_lon REAL,
+    ->     estimated_dates TEXT,
+    ->     start_date TEXT,
+    ->     end_date TEXT,
+    ->     timetable TEXT
+    -> );
 ```
