@@ -202,8 +202,8 @@ sudo apt install git
 cd /var/www/html
 git clone https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05.git
 ```
-- Fitxer de configuració del servidor web i descarrega: ./files/equipaments.conf
-  - Descarregar: https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/equipaments.conf
+- Fitxer de configuració del servidor web i descarrega: ./files/apache2/equipaments.conf
+  - Descarregar: https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/apache2/equipaments.conf
 
 ---
 
