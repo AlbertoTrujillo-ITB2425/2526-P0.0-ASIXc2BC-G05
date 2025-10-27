@@ -2,11 +2,11 @@
 
 ## Índex
 
-1. [Planificació del projecte](#planificació-del-projecte)
-2. [Esquema de xarxa](#esquema-de-xarxa)
-    - [Descàrrega de l'esquema](#descàrrega-de-lesquema)
-    - [Visualització de l'esquema](#visualització-de-lesquema)
-3. [Infraestructura desplegada](#infraestructura-desplegada)
+1. [Planificació del projecte](#planificació-del-projecte)  
+2. [Esquema de xarxa](#esquema-de-xarxa)  
+    - [Descàrrega de l'esquema](#descàrrega-de-lesquema)  
+    - [Visualització de l'esquema](#visualització-de-lesquema)  
+3. [Infraestructura desplegada](#infraestructura-desplegada)  
 4. [Configuració de serveis](#configuració-de-serveis)
 
 ---
@@ -34,38 +34,42 @@ La topologia usa el **router R-NCC** com a encaminador central amb **servidors a
 
 ### Router R-NCC
 - Funció: encaminador entre subxarxes, gateway de sortida, punt de control entre VLANs i la xarxa de serveis.
-- Fitxer complet: ./files/router_r-ncc.conf
+- Fitxer complet: ./files/router_r-ncc.conf  
+  - Descarregar: https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/router_r-ncc.conf
 
 ### DHCP Server
-Text box — Descripción breve:
 - Funció: assigna adreces IP dinàmiques per les VLANs, amb reserves per servidors i dispositius.
-- Fitxer complet: ./files/dhcpd.conf
+- Fitxer complet: ./files/dhcpd.conf  
+  - Descarregar: https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/dhcpd.conf
 
 ### Database Server B-NCC:
 - B-NCC: servidor de base de dades (MySQL/MariaDB) amb còpies de seguretat i permisos restringits.
-
-- Fitxers: ./files/mysql_init.sql, ./files/backup_mysql.sh, ./files/webserver_config.conf
+- Fitxers: ./files/mysql_init.sql, ./files/backup_mysql.sh, ./files/webserver_config.conf  
+  - Descarregar mysql_init.sql: https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/mysql_init.sql  
+  - Descarregar backup_mysql.sh: https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/backup_mysql.sh
 
 ### Web Server W-NCC
 - Funció: servidor que serveix aplicació i es connecta amb B-NCC amb usuari d'aplicació.
-- ***Estructura***:
-- public/: arxius servits pel servidor web (DocumentRoot)
-- src/: codi font (models, controllers, helpers)
-- config/: configuració (config.php). No commetis secrets.
-- sql/: DDL i scripts d'inicialització
-- logs/: logs d'execució (ignorar a git)
+- Fitxer de configuració: ./files/webserver_config.conf  
+  - Descarregar webserver_config.conf: https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/webserver_config.conf
+- Estructura:
+  - public/: arxius servits pel servidor web (DocumentRoot)
+  - src/: codi font (models, controllers, helpers)
+  - config/: configuració (config.php). No commetis secrets.
+  - sql/: DDL i scripts d'inicialització
+  - logs/: logs d'execució (ignorar a git)
 
 ---
 
 ### File Server F-NCC
 
-- Funció: poder compartir fitchers a la xarxa amb altres usuaris corporatius o clients a traves de la DMZ
+- Funció: poder compartir fitxers a la xarxa amb altres usuaris corporatius o clients a través de la DMZ.
+
 ---
 
 ### Clients (CLIWIN i CLILIN)
-Text box — Descripció breu:
-- CLIWIN: client Windows que obté IP per DHCP i accedeix a recursos compartits (NFS via client o SFTP).
-- CLILIN: client Linux que utilitza DHCP o IP estàtica, munta NFS i comprova conectivitat.
+- CLIWIN: client Windows que obté IP per DHCP i accedeix a recursos compartits.  
+- CLILIN: client Linux que utilitza DHCP o IP estàtica i comprova conectivitat.
 
 ---
 
@@ -104,6 +108,8 @@ host PC1_CLILIN {
   fixed-address 192.168.5.131;
 }
 ```
+- Fitxer complet i descarrega: ./files/dhcpd.conf  
+  - Descarregar: https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/dhcpd.conf
 
 ### MySQL creació de la base de dades
 ```sql
@@ -153,6 +159,8 @@ CREATE TABLE equipaments_educacio (
     timetable TEXT
 );
 ```
+- Fitxer complet i descarrega: ./files/mysql_init.sql  
+  - Descarregar: https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/mysql_init.sql
 
 ### mySQL importar dades csv 
 ```sql
@@ -183,9 +191,27 @@ SET
  geo_epgs_4326_lat = NULLIF(@geo_epgs_4326_lat, ''),
  geo_epgs_4326_lon = NULLIF(@geo_epgs_4326_lon, '');
 ```
+- Recorda col·locar el fitxer .csv en la ruta indicada abans d'executar.
 
 ### Desplegament de la aplicacio web
+- Instalar git si no el tenim
+```bash
+sudo apt install git
+```
 ```bash
 cd /var/www/html
 git clone https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05.git
 ```
+- Fitxer de configuració del servidor web i descarrega: ./files/webserver_config.conf  
+  - Descarregar: https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/webserver_config.conf
+
+---
+
+## Fitxers al directori /files (enllaços de descàrrega)
+Tots els fitxers de configuració i scripts es troben a la carpeta /files del repositori. Podeu descarregar-los directament fent clic als enllaços següents:
+
+- router_r-ncc.conf — https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/router_r-ncc.conf  
+- dhcpd.conf — https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/dhcpd.conf  
+- mysql_init.sql — https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/mysql_init.sql  
+- backup_mysql.sh — https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/backup_mysql.sh  
+- webserver_config.conf — https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/webserver_config.conf
