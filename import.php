@@ -1,4 +1,3 @@
-// Comentario agregado para commit de prueba - 27/10/2025
 <?php
 // import.php - Importar CSV/JSON con previsualización y mapping
 // Interfaz mejorada (Tailwind CSS), flujo en 2 pasos: PREVIEW -> IMPORT
