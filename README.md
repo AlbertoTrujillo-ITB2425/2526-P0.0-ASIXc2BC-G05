@@ -105,8 +105,6 @@ host PC1_CLILIN {
 }
 ```
 
-El fitxer defineix **subxarxes**, **rangs d’IP** i **opcions globals** com **DNS** i **gateway**. Inclou **reserves** per a servidors i dispositius de xarxa (exemple: `option domain-name-servers 8.8.8.8;`).
-
 ### MySQL creació de la base de dades
 ```sql
 CREATE DATABASE Educacio;
@@ -184,4 +182,10 @@ SET
  geo_epgs_25831_y = NULLIF(@geo_epgs_25831_y, ''),
  geo_epgs_4326_lat = NULLIF(@geo_epgs_4326_lat, ''),
  geo_epgs_4326_lon = NULLIF(@geo_epgs_4326_lon, '');
+```
+
+### Desplegament de la aplicacio web
+```bash
+cd /var/www/html
+git clone https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05.git
 ```
