@@ -1,3 +1,4 @@
+// Comentario agregado para commit de prueba - 27/10/2025
 <?php
 // table.php - visualització i CRUD genèric per a una taula
 // Versió adaptada: interfície traduïda al català i estil amb TailwindCSS

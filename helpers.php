@@ -1,3 +1,4 @@
+// Comentario agregado para commit de prueba - 27/10/2025
 <?php
 // helpers.php - funcions utilitàries per l'aplicació
 

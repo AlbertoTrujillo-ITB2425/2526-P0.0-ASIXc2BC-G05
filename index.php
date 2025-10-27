@@ -1,3 +1,4 @@
+// Comentario agregado para commit de prueba - 27/10/2025
 <?php
 // index.php - Llistat de taules i enllaç a operacions CRUD / import
 require 'config.php';
