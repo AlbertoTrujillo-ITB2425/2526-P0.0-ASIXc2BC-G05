@@ -12,17 +12,14 @@ $mysqli = new mysqli($host, $user, $pass, $db, (int)$port);
 
 // Comprobar conexión
 if ($mysqli->connect_error) {
-    die("❌ Error de conexión a MySQL ({$host}:{$port}): " . $mysqli->connect_error);
+    die("Error de conexión a MySQL ({$host}:{$port}): " . $mysqli->connect_error);
 }
 
 // Establecer charset UTF-8
 if (!$mysqli->set_charset("utf8mb4")) {
-    die("❌ Error estableciendo charset utf8mb4: " . $mysqli->error);
+    die("Error estableciendo charset utf8mb4: " . $mysqli->error);
 }
 
-// Exponer conexión como $conn
 $conn = $mysqli;
 
-// Opcional: mensaje de prueba
-// echo "✅ Conexión correcta a la base de datos '{$db}' en {$host}:{$port}";
 ?>
