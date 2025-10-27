@@ -207,7 +207,7 @@ git clone https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05.git
 
 ---
 
-## Fitxers al directori /files (enllaços de descàrrega)
+## Fitxers de configuracio: 
 Tots els fitxers de configuració i scripts es troben a la carpeta /files del repositori. Podeu descarregar-los directament fent clic als enllaços següents:
 
 - router_r-ncc.conf — https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/router_r-ncc.conf  
