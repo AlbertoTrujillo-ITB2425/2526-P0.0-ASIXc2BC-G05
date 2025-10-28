@@ -23,10 +23,6 @@ L’arquitectura desplegada es representa al diagrama següent. Pots descarregar
 
 <img width="910" height="565" alt="Captura de pantalla de 2025-10-28 15-11-17" src="https://github.com/user-attachments/assets/bae3db11-eba9-46ba-a99c-0463bbbf78d0" />
 
-</div>
-![DHCP Server (vista general)](https://github.com/user-attachments/assets/5f981a11-8565-4214-b966-b415ec1f0aa3)
-</div>
-
 La topologia usa el **router R-NCC** com a encaminador central amb **servidors a la VLAN de serveis** i **adreçament IP separat** per facilitar l’**escalabilitat** i la **gestió**.
 
 ---
