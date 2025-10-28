@@ -19,10 +19,9 @@ La planificació s'ha fet a **Proofhub** en **tres sprints** de **dues setmanes*
 
 ## 2. Esquema de xarxa
 
-L’arquitectura desplegada es representa al diagrama següent. Pots descarregar el fitxer de l’esquema de xarxa: [Descarregar esquema de xarxa (Packet Tracer)](https://drive.google.com/file/d/1_9R_KMz4pj8fD7PryMaJtIu30l-mr9sZ/view?usp=sharing)
+L’arquitectura desplegada es representa al diagrama següent. Pots descarregar el fitxer de l’esquema de xarxa: [Descarregar esquema de xarxa (Packet Tracer)](https://drive.google.com/file/d/1sruDIO3lY_b99p6khwERN0n-WELGoI5u/view?usp=sharing)
 
-<img width="930" height="566" alt="image" src="https://github.com/user-attachments/assets/3c69caa1-711b-4afd-aabb-e7e569699aca" />
-" />)
+<img width="930" height="566" alt="image" src="<img width="910" height="565" alt="Captura de pantalla de 2025-10-28 15-11-17" src="https://github.com/user-attachments/assets/9fede1e3-874f-4566-9d57-445eaedf4dc9" />
 </div>
 ![DHCP Server (vista general)](https://github.com/user-attachments/assets/5f981a11-8565-4214-b966-b415ec1f0aa3)
 </div>
