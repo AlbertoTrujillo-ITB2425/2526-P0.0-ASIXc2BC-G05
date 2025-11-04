@@ -256,7 +256,9 @@ Email Address []:admin@G5.cat
 sudo git clone https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05.git /var/www/html
 ```
 ### Comprovacio Final carega la pagina en PHP y te un certificat HTTPS 
-<img width="1775" height="967" alt="Captura de pantalla de 2025-11-04 15-52-23" src="https://github.com/user-attachments/assets/3674bf63-8b16-49a4-92c4-a4b3de05e833" />
+<img width="1775" height="650" alt="image" src="https://github.com/user-attachments/assets/d36ccf60-b453-4f5d-977e-124bfbc8baa2" />
+<img width="550" height="673" alt="Captura de pantalla de 2025-11-04 16-19-15" src="https://github.com/user-attachments/assets/fd776fcf-7a14-407a-8d1f-0e0e4a166205" />
+
 
 
 ---
