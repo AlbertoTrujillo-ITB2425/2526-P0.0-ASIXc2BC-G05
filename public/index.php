@@ -57,15 +57,5 @@ function table_count(mysqli $conn, string $table): ?int {
     <?php endif; ?>
   </section>
 
-  <section class="bg-white shadow rounded p-4">
-    <h2 class="font-semibold mb-2">Ús ràpid:</h2>
-    <ol class="list-decimal list-inside space-y-1 text-gray-700 text-sm">
-      <li>Fes clic a "Veure / CRUD" per a una taula i podràs afegir, editar i eliminar registres (si la taula té clau primària).</li>
-      <li>Fes clic a "Importar" per pujar dades. El sistema mapearà columnes amb el mateix nom i inserir dades via prepared statements.</li>
-      <li>"Exportar CSV" crearà un fitxer CSV descarregable amb les dades de la taula.</li>
-    </ol>
-    <p class="text-xs text-gray-500 mt-2">Nota: si algun enllaç (per exemple export.php) no està implementat encara, es pot crear fàcilment.</p>
-  </section>
-
 </body>
 </html>
