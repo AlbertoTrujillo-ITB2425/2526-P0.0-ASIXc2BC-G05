@@ -251,7 +251,7 @@ Email Address []:admin@G5.cat
     CustomLog ${APACHE_LOG_DIR}/equipaments_ssl_access.log combined
 </VirtualHost>
 ```
-### Clonar Repositori y copiar fitxers carpeta ** /public ** al directori /var/www/html per poder mostrar la web al navegador
+### Clonar Repositori y copiar fitxers carpeta **/public** al directori /var/www/html per poder mostrar la web al navegador
 ``` bash
 sudo git clone https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05.git /var/www/html
 ```
