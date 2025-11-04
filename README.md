@@ -236,9 +236,9 @@ Email Address []:admin@G5.cat
  <VirtualHost *:443>
     ServerAdmin webmaster@g5.cat   
     ServerName g5.cat           
-    DocumentRoot /var/www/html                
+    DocumentRoot /var/www/html/public                
 
-    <Directory /var/www/html/equipaments-app>
+    <Directory /var/www/html/public>
         Options Indexes FollowSymLinks
         AllowOverride All
         Require all granted
@@ -250,6 +250,10 @@ Email Address []:admin@G5.cat
     ErrorLog ${APACHE_LOG_DIR}/equipaments_ssl_error.log
     CustomLog ${APACHE_LOG_DIR}/equipaments_ssl_access.log combined
 </VirtualHost>
+```
+### Clonar Repositori y copiar fitxers carpeta ** /public ** al directori /var/www/html per poder mostrar la web al navegador
+``` bash
+sudo git clone https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05.git /var/www/html
 ```
 ### Comprovacio Final carega la pagina en PHP y te un certificat HTTPS 
 <img width="1775" height="967" alt="Captura de pantalla de 2025-11-04 15-52-23" src="https://github.com/user-attachments/assets/3674bf63-8b16-49a4-92c4-a4b3de05e833" />
