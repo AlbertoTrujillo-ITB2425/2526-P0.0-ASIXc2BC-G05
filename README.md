@@ -202,6 +202,57 @@ git clone https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05.git
 - Fitxer de configuració del servidor web i descarrega: ./files/apache2/equipaments.conf
   - Descarregar: https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/apache2/equipaments.conf
 
+### Activar HTTPS:
+``` bash
+sudo a2enmod ssl
+sudo a2enmod headers
+sudo a2enmod rewrite
+sudo systemctl restart apache2
+```
+```bash
+sudo openssl req -x509 -newkey rsa:4096 -keyout /etc/ssl/private/equipaments.key -out /etc/ssl/certs/equipaments.crt -days 365
+.......+......+..+...+...+.......+............+..+.+..+.......+...+...........+..........+.....+....+...+..+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.+......+......+.+.....+...+.+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*......+....+.........+.....+..........+..+....+....................+.+...+...........+...................+...+.....+..........+...+.........+.................+...+..........+........+........................+....+.........+...............+...........+......+.+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+...+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*..+.+......+...+..+....+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*...............+..+...+.+...+.....+...............+.+......+......+..+......+......+......+..........+.........+...+.....+.+.....+.........+.+...........+..................+.+.....+.......+...............+...+.....+.........................+......+......+..................+...........+...............+...+..........+...+...............+.....+.............+.....+.+......+...+............+...........................+...........+.+.........+...........+.+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Enter PEM pass phrase:
+Verifying - Enter PEM pass phrase:
+-----
+You are about to be asked to enter information that will be incorporated
+into your certificate request.
+What you are about to enter is what is called a Distinguished Name or a DN.
+There are quite a few fields but you can leave some blank
+For some fields there will be a default value,
+If you enter '.', the field will be left blank.
+-----
+Country Name (2 letter code) [AU]:ES
+State or Province Name (full name) [Some-State]:Barcelona
+Locality Name (eg, city) []:Barcelona
+Organization Name (eg, company) [Internet Widgits Pty Ltd]:G5
+Organizational Unit Name (eg, section) []:G5
+Common Name (e.g. server FQDN or YOUR name) []:W-NCC
+Email Address []:admin@G5.cat
+``` 
+- Afegim a /etc/apache2/webserver_config.conf
+``` bash
+ <VirtualHost *:443>
+    ServerAdmin webmaster@g5.cat   
+    ServerName g5.cat           
+    DocumentRoot /var/www/html                
+
+    <Directory /var/www/html/equipaments-app>
+        Options Indexes FollowSymLinks
+        AllowOverride All
+        Require all granted
+    </Directory>
+    SSLEngine on
+    SSLCertificateFile /etc/ssl/certs/equipaments.crt
+    SSLCertificateKeyFile /etc/ssl/private/equipaments.key
+
+    ErrorLog ${APACHE_LOG_DIR}/equipaments_ssl_error.log
+    CustomLog ${APACHE_LOG_DIR}/equipaments_ssl_access.log combined
+</VirtualHost>
+```
+
+
 ---
 
 ## Fitxers de configuracio: 
