@@ -277,7 +277,7 @@ SQL
 
 2) Importar el backup SQL a la base de dades Educacio:
 ```bash
-sudo mysql -u root -p Educacio < /ruta/al/backup.sql
+sudo mysql -u root -p Educacio < backup.sql
 ```
 
 Alternativa: importar des del client MySQL:
