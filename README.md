@@ -253,9 +253,7 @@ Tots els fitxers de configuració i scripts es troben a la carpeta /files del re
 - backup_mysql.sh — https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/backup_mysql.sh  
 - webserver_config.conf — https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/webserver_config.conf
 
-Nota: Abans de desplegar la web, importa el fitxer backup.sql a MySQL i assegura't que existeix l'usuari "bchecker" amb la contrasenya "bchecker121" i que té tots els GRANTS necessaris sobre la base de dades Educacio. No deixis credencials sensibles en el repositori; canvia aquestes credencials en entorns de producció i utilitza secrets/gestors de configuració segurs.
-
-A continuació tens els comandaments exactes per crear la base de dades, crear l'usuari i importar el backup. Substitueix /ruta/al/backup.sql per la ruta real del fitxer backup.sql al servidor.
+Nota: Abans de desplegar la web, importa el fitxer backup.sql a MySQL i assegura't que existeix l'usuari "bchecker" amb la contrasenya "bchecker121" i que té tots els GRANTS necessaris sobre la base de dades Educacio.
 
 1) Crear la base de dades, crear l'usuari bchecker i donar-li permisos (execució com a root del sistema):
 ```bash
