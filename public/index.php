@@ -1,7 +1,8 @@
 <?php
-// index.php - Llistat de taules i enllaç a operacions CRUD / import
-require 'config.php';
-require 'helpers.php';
+// index.php - Gestor de taules amb accés a CRUD, importació i exportació
+
+require __DIR__ . '/includes/config.php';
+require __DIR__ . '/includes/helpers.php';
 
 $tables = get_tables($conn);
 
@@ -43,19 +44,45 @@ function table_count(mysqli $conn, string $table): ?int {
           $cnt = table_count($conn, $t); ?>
           <li class="p-3 border rounded hover:shadow flex flex-col md:flex-row md:justify-between md:items-center">
             <div>
-              <strong class="text-gray-800"><?php echo h($t); ?></strong>
+              <strong class="text-gray-800"><?php echo htmlspecialchars($t); ?></strong>
               <span class="text-sm text-gray-500"> — <?php echo is_null($cnt) ? 'mida desconeguda' : $cnt . ' registres'; ?></span>
             </div>
-            <div class="flex gap-2 mt-2 md:mt-0">
+            <div class="flex gap-2 mt-2 md:mt-0 relative">
               <a href="table.php?table=<?php echo urlencode($t); ?>" class="text-blue-600 hover:underline">Veure / CRUD</a>
               <a href="import.php?table=<?php echo urlencode($t); ?>" class="text-green-600 hover:underline">Importar</a>
-              <a href="export.php?table=<?php echo urlencode($t); ?>" class="text-purple-600 hover:underline">Exportar CSV</a>
+
+              <button onclick="toggleExportMenu('<?php echo htmlspecialchars($t); ?>')" class="text-purple-600 hover:underline">Exportar</button>
+              <div id="exportMenu-<?php echo htmlspecialchars($t); ?>" class="absolute top-full left-0 mt-1 bg-white border rounded shadow hidden z-10">
+                <a href="export.php?table=<?php echo urlencode($t); ?>&format=csv" class="block px-4 py-2 hover:bg-gray-100">CSV</a>
+                <a href="export.php?table=<?php echo urlencode($t); ?>&format=json" class="block px-4 py-2 hover:bg-gray-100">JSON</a>
+              </div>
             </div>
           </li>
         <?php endforeach; ?>
       </ul>
     <?php endif; ?>
   </section>
+
+  <script>
+    function toggleExportMenu(tableName) {
+      const menuId = 'exportMenu-' + tableName;
+      const menu = document.getElementById(menuId);
+      if (!menu) return;
+
+      document.querySelectorAll('[id^="exportMenu-"]').forEach(m => {
+        if (m.id !== menuId) m.classList.add('hidden');
+      });
+
+      menu.classList.toggle('hidden');
+
+      document.addEventListener('click', function handler(e) {
+        if (!menu.contains(e.target) && e.target.tagName !== 'BUTTON') {
+          menu.classList.add('hidden');
+          document.removeEventListener('click', handler);
+        }
+      });
+    }
+  </script>
 
 </body>
 </html>

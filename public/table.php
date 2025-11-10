@@ -1,7 +1,7 @@
 <?php
 // table.php - visualització i CRUD genèric per a una taula
-require 'config.php';
-require 'helpers.php';
+require 'includes/config.php';
+require 'includes/helpers.php';
 
 session_start();
 
