@@ -211,26 +211,9 @@ sudo systemctl restart apache2
 ```
 ```bash
 sudo openssl req -x509 -newkey rsa:4096 -keyout /etc/ssl/private/equipaments.key -out /etc/ssl/certs/equipaments.crt -days 365
-.......+......+..+...+...+.......+............+..+.+..+.......+...+...........+..........+.....+....+...+..+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.+......+......+.+.....+...+.+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*......+....+.........+.....+..........+..+....+....................+.+...+...........+...................+...+.....+..........+...+.........+.................+...+..........+........+........................+....+.........+...............+...........+......+.+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-...+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*..+.+......+...+..+....+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*...............+..+...+.+...+.....+...............+.+......+......+..+......+......+......+..........+.........+...+.....+.+.....+.........+.+...........+..................+.+.....+.......+...............+...+.....+.........................+......+......+..................+...........+...............+...+..........+...+...............+.....+.............+.....+.+......+...+............+...........................+...........+.+.........+...........+.+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Enter PEM pass phrase:
-Verifying - Enter PEM pass phrase:
------
-You are about to be asked to enter information that will be incorporated
-into your certificate request.
-What you are about to enter is what is called a Distinguished Name or a DN.
-There are quite a few fields but you can leave some blank
-For some fields there will be a default value,
-If you enter '.', the field will be left blank.
------
-Country Name (2 letter code) [AU]:ES
-State or Province Name (full name) [Some-State]:Barcelona
-Locality Name (eg, city) []:Barcelona
-Organization Name (eg, company) [Internet Widgits Pty Ltd]:G5
-Organizational Unit Name (eg, section) []:G5
-Common Name (e.g. server FQDN or YOUR name) []:W-NCC
-Email Address []:admin@G5.cat
-``` 
+```
+Se seguirán las preguntas interactivas para generar el certificado (Country, State, Locality, Organization, OU, Common Name, Email).
+
 - Afegim a /etc/apache2/webserver_config.conf
 ``` bash
  <VirtualHost *:443>
@@ -255,11 +238,9 @@ Email Address []:admin@G5.cat
 ``` bash
 sudo git clone https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05.git /var/www/html
 ```
-### Comprovacio Final carega la pagina en PHP y te un certificat HTTPS 
+### Comprovacio Final carrega la pagina en PHP i te un certificat HTTPS 
 <img width="1775" height="650" alt="image" src="https://github.com/user-attachments/assets/d36ccf60-b453-4f5d-977e-124bfbc8baa2" />
 <img width="550" height="673" alt="Captura de pantalla de 2025-11-04 16-19-15" src="https://github.com/user-attachments/assets/fd776fcf-7a14-407a-8d1f-0e0e4a166205" />
-
-
 
 ---
 
@@ -271,3 +252,48 @@ Tots els fitxers de configuració i scripts es troben a la carpeta /files del re
 - mysql_init.sql — https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/mysql_init.sql  
 - backup_mysql.sh — https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/backup_mysql.sh  
 - webserver_config.conf — https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/webserver_config.conf
+
+Nota: Abans de desplegar la web, importa el fitxer backup.sql a MySQL i assegura't que existeix l'usuari "bchecker" amb la contrasenya "bchecker121" i que té tots els GRANTS necessaris sobre la base de dades Educacio. No deixis credencials sensibles en el repositori; canvia aquestes credencials en entorns de producció i utilitza secrets/gestors de configuració segurs.
+
+A continuació tens els comandaments exactes per crear la base de dades, crear l'usuari i importar el backup. Substitueix /ruta/al/backup.sql per la ruta real del fitxer backup.sql al servidor.
+
+1) Crear la base de dades, crear l'usuari bchecker i donar-li permisos (execució com a root del sistema):
+```bash
+sudo mysql -u root -p <<'SQL'
+CREATE DATABASE IF NOT EXISTS `Educacio` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+CREATE USER IF NOT EXISTS 'bchecker'@'localhost' IDENTIFIED BY 'bchecker121';
+GRANT ALL PRIVILEGES ON `Educacio`.* TO 'bchecker'@'localhost';
+FLUSH PRIVILEGES;
+SQL
+```
+
+Si la web o l'aplicació accedeix a la base de dades des d'una altra màquina (no `localhost`), crea l'usuari per a l'host concret. Exemple per permetre connexions des d'una IP concreta (recomanat només si cal):
+```bash
+sudo mysql -u root -p <<'SQL'
+CREATE DATABASE IF NOT EXISTS `Educacio` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+CREATE USER IF NOT EXISTS 'bchecker'@'10.0.0.5' IDENTIFIED BY 'bchecker121';
+GRANT ALL PRIVILEGES ON `Educacio`.* TO 'bchecker'@'10.0.0.5';
+FLUSH PRIVILEGES;
+SQL
+```
+
+2) Importar el backup SQL a la base de dades Educacio:
+```bash
+sudo mysql -u root -p Educacio < /ruta/al/backup.sql
+```
+
+Alternativa: importar des del client MySQL:
+```bash
+sudo mysql -u root -p Educacio
+mysql> SOURCE /$HOME/backup.sql;
+```
+
+Comprovacions ràpides:
+- Llistar l'usuari creat:
+```bash
+sudo mysql -u root -p -e "SELECT User, Host FROM mysql.user WHERE User='bchecker';"
+```
+- Mostrar els GRANTS de l'usuari:
+```bash
+sudo mysql -u root -p -e "SHOW GRANTS FOR 'bchecker'@'localhost';"
+```
