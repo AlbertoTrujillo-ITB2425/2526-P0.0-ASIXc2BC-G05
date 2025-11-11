@@ -423,15 +423,34 @@ sudo ufw allow from 192.168.5.128/26 to any port 445
 ---
 
 ## 9. Eines de monitorització
+## Objectiu de l’script
 
-### 9.1 Script de monitorització de xarxa actualitzat
+Aquest script es va crear per garantir la **monitorització automàtica de la xarxa i dels serveis crítics** dins d’una infraestructura local.  
+
+## Què fa
+
+- Comprova cada 10 minuts si els **hosts principals** (routers, servidors i clients) responen al ping.  
+- Verifica si els **ports essencials** (HTTP, DNS, FTP, MySQL, etc.) estan disponibles.  
+- Registra els resultats en un **fitxer de log** amb data i hora.  
+- Assegura un **control continu i preventiu** del sistema, millorant la fiabilitat i la resposta davant possibles fallades.  
+
 [network_analyser](https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/network_analyser.sh)
 
 ---
 
 ## 10. Manteniment i backup
+## Objectiu de l’script
 
-### 10.1 Script de backup actualitzat per la nova topologia
+Aquest script es va crear per garantir la **còpia de seguretat automàtica** de les configuracions i dades crítiques dels servidors dins de la infraestructura local.  
+
+## Què fa
+
+- Detecta la IP del servidor mitjançant la interfície configurada i identifica la seva funció (Web, DNS, Fitxers, Base de Dades o DHCP).  
+- Genera **backups específics** segons el tipus de servidor, comprimint configuracions i directoris rellevants.  
+- Exporta les bases de dades MySQL amb la contrasenya definida i guarda els fitxers resultants.  
+- Elimina automàticament els **backups antics de més de 30 dies**, mantenint l’espai controlat.  
+- Registra totes les operacions en un **fitxer de log** amb data i hora per garantir traçabilitat i detecció d’errors.  
+
 
 [system_backup](https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/system_backup.sh)
 
