@@ -2,13 +2,12 @@
 
 ## Índex
 
-1. [Introducció](##introducció)
-2. [Accés al sistema](##accés-al-sistema)
-3. [Utilització de l'aplicació web](##utilització-de-laplicació-web)
-4. [Serveis disponibles](##serveis-disponibles)
-5. [Preguntes freqüents](##preguntes-freqüents)
-6. [Resolució de problemes](##resolució-de-problems)
-7. [Contacte i suport](##contacte-i-suport)
+1. [Introducció](#introducció)
+2. [Accés al sistema](#accés-al-sistema)
+3. [Utilització de l'aplicació web](#utilització-de-laplicació-web)
+4. [Serveis disponibles](#serveis-disponibles)
+5. [Preguntes freqüents](#preguntes-freqüents)
+6. [Resolució de problemes](#resolució-de-problems)
 
 ---
 
