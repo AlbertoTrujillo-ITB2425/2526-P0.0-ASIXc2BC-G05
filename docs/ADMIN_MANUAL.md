@@ -12,7 +12,6 @@
 8. [Seguretat de xarxa](#8-seguretat-de-xarxa)
 9. [Eines de monitorització](#9-eines-de-monitorització)
 10. [Manteniment i backup](#10-manteniment-i-backup)
-11. [Resolució de problemes avançada](#11-resolució-de-problemes-avançada)
 
 ---
 
@@ -426,66 +425,7 @@ sudo ufw allow from 192.168.5.128/26 to any port 445
 ## 9. Eines de monitorització
 
 ### 9.1 Script de monitorització de xarxa actualitzat
-
-```bash
-cat << 'EOF' > /usr/local/bin/network_monitor.sh
-#!/bin/bash
-
-LOGFILE="/var/log/network_monitor.log"
-DATE=$(date '+%Y-%m-%d %H:%M:%S')
-
-echo "$DATE - === INICI MONITORITZACIÓ ===" >> $LOGFILE
-
-# Hosts per xarxa
-declare -A HOSTS
-HOSTS["Router"]="192.168.5.1"
-HOSTS["Web-Server"]="192.168.5.20"
-HOSTS["DNS-Server"]="192.168.5.30"
-HOSTS["File-Server"]="192.168.5.40"
-HOSTS["DB-Server"]="192.168.5.80"
-HOSTS["DHCP-Server"]="192.168.5.140"
-HOSTS["Client-Windows"]="192.168.5.130"
-HOSTS["Client-Linux"]="192.168.5.131"
-
-# Verificar conectivitat
-for name in "${!HOSTS[@]}"; do
-    ip="${HOSTS[$name]}"
-    if ping -c 1 -W 2 "$ip" > /dev/null 2>&1; then
-        echo "$DATE - OK: $name ($ip) accessible" >> $LOGFILE
-    else
-        echo "$DATE - ERROR: $name ($ip) no accessible" >> $LOGFILE
-    fi
-done
-
-# Verificar serveis crítics
-declare -A SERVICES
-SERVICES["Web-HTTP"]="192.168.5.20:80"
-SERVICES["Web-HTTPS"]="192.168.5.20:443"
-SERVICES["DNS"]="192.168.5.30:53"
-SERVICES["FTP"]="192.168.5.40:21"
-SERVICES["SSH-FTP"]="192.168.5.40:22"
-SERVICES["MySQL"]="192.168.5.80:3306"
-
-for service in "${!SERVICES[@]}"; do
-    host_port="${SERVICES[$service]}"
-    host=$(echo $host_port | cut -d':' -f1)
-    port=$(echo $host_port | cut -d':' -f2)
-    
-    if nc -z -w5 $host $port > /dev/null 2>&1; then
-        echo "$DATE - OK: $service ($host_port) disponible" >> $LOGFILE
-    else
-        echo "$DATE - ERROR: $service ($host_port) no disponible" >> $LOGFILE
-    fi
-done
-
-echo "$DATE - === FI MONITORITZACIÓ ===" >> $LOGFILE
-EOF
-
-chmod +x /usr/local/bin/network_monitor.sh
-
-# Executar cada 10 minuts
-echo "*/10 * * * * /usr/local/bin/network_monitor.sh" | sudo crontab -
-```
+[network_analyser](https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/network_analyser.sh)
 
 ---
 
@@ -494,15 +434,6 @@ echo "*/10 * * * * /usr/local/bin/network_monitor.sh" | sudo crontab -
 ### 10.1 Script de backup actualitzat per la nova topologia
 
 [system_backup](https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/system_backup.sh)
-
-
----
-
-## 11. Resolució de problemes avançada
-
-### 11.1 Diagnòstic per xarxes
-[network_analyser](https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/network_analyser.sh)
-
 
 ---
 
