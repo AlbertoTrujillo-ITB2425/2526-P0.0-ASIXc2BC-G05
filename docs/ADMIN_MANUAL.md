@@ -493,159 +493,16 @@ echo "*/10 * * * * /usr/local/bin/network_monitor.sh" | sudo crontab -
 
 ### 10.1 Script de backup actualitzat per la nova topologia
 
-```bash
-cat << 'EOF' > /usr/local/bin/system_backup.sh
-#!/bin/bash
+[system_backup](https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/system_backup.sh)
 
-BACKUP_DIR="/backups"
-DATE=$(date +%Y%m%d_%H%M%S)
-LOG_FILE="/var/log/backup.log"
-
-mkdir -p $BACKUP_DIR
-echo "$(date) - Iniciant backup del sistema" >> $LOG_FILE
-
-# Backup per servidor segons la seva funció
-case "$(hostname -I | awk '{print $1}')" in
-    "192.168.5.20") # Web Server
-        echo "$(date) - Backup Web Server..." >> $LOG_FILE
-        tar -czf $BACKUP_DIR/web_configs_$DATE.tar.gz \
-            /etc/apache2/ \
-            /var/www/ \
-            /etc/ssl/ 2>> $LOG_FILE
-        ;;
-    "192.168.5.30") # DNS Server
-        echo "$(date) - Backup DNS Server..." >> $LOG_FILE
-        tar -czf $BACKUP_DIR/dns_configs_$DATE.tar.gz \
-            /etc/bind/ \
-            /var/cache/bind/ 2>> $LOG_FILE
-        ;;
-    "192.168.5.40") # File Server
-        echo "$(date) - Backup File Server..." >> $LOG_FILE
-        tar -czf $BACKUP_DIR/file_configs_$DATE.tar.gz \
-            /etc/vsftpd.conf \
-            /etc/samba/ \
-            /srv/samba/ \
-            /home/ftpuser/ 2>> $LOG_FILE
-        ;;
-    "192.168.5.80") # Database Server
-        echo "$(date) - Backup Database Server..." >> $LOG_FILE
-        mysqldump -u root -p'password' --all-databases > $BACKUP_DIR/mysql_$DATE.sql 2>> $LOG_FILE
-        tar -czf $BACKUP_DIR/db_configs_$DATE.tar.gz /etc/mysql/ 2>> $LOG_FILE
-        ;;
-    "192.168.5.140") # DHCP Server
-        echo "$(date) - Backup DHCP Server..." >> $LOG_FILE
-        tar -czf $BACKUP_DIR/dhcp_configs_$DATE.tar.gz \
-            /etc/dhcp/ \
-            /var/lib/dhcp/ 2>> $LOG_FILE
-        ;;
-esac
-
-# Neteja de backups antics
-find $BACKUP_DIR -name "*_$DATE.*" -mtime +30 -delete
-
-echo "$(date) - Backup completat per $(hostname -I | awk '{print $1}')" >> $LOG_FILE
-EOF
-
-chmod +x /usr/local/bin/system_backup.sh
-```
 
 ---
 
 ## 11. Resolució de problemes avançada
 
 ### 11.1 Diagnòstic per xarxes
+[network_analyser](https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/network_analyser.sh)
 
-```bash
-cat << 'EOF' > /usr/local/bin/network_diagnosis.sh
-#!/bin/bash
-
-echo "=== DIAGNÒSTIC DE XARXA G5 Systems ==="
-echo "Data: $(date)"
-echo "IP Local: $(hostname -I | awk '{print $1}')"
-echo
-
-# Determinar quina xarxa som
-LOCAL_IP=$(hostname -I | awk '{print $1}')
-case "$LOCAL_IP" in
-    192.168.5.2[0-9]|192.168.5.[3-5][0-9]|192.168.5.6[0-3])
-        NETWORK="DMZ"
-        GATEWAY="192.168.5.1"
-        ;;
-    192.168.5.6[4-9]|192.168.5.[7-9][0-9]|192.168.5.1[0-2][0-7])
-        NETWORK="Intranet"
-        GATEWAY="192.168.5.65"
-        ;;
-    192.168.5.12[8-9]|192.168.5.1[3-8][0-9]|192.168.5.19[0-1])
-        NETWORK="NAT"
-        GATEWAY="192.168.5.129"
-        ;;
-    *)
-        NETWORK="Desconeguda"
-        GATEWAY="N/A"
-        ;;
-esac
-
-echo "Xarxa detectada: $NETWORK"
-echo "Gateway: $GATEWAY"
-echo
-
-# Test de conectivitat bàsic
-echo "1. TEST DE CONECTIVITAT:"
-echo "- Ping al gateway ($GATEWAY):"
-ping -c 3 $GATEWAY
-echo
-
-echo "- Ping a DNS (192.168.5.30):"
-ping -c 3 192.168.5.30
-echo
-
-echo "- Ping a Internet (8.8.8.8):"
-ping -c 3 8.8.8.8
-echo
-
-# Resolució DNS
-echo "2. RESOLUCIÓ DNS:"
-nslookup web.g5.local 192.168.5.30
-echo
-
-# Verificar rutes
-echo "3. TAULA DE RUTING:"
-ip route show
-echo
-
-# Ports oberts
-echo "4. PORTS OBERTS LOCALS:"
-netstat -tlnp | head -20
-echo
-
-# Test de serveis per xarxa
-echo "5. TEST DE SERVEIS SEGONS XARXA:"
-case "$NETWORK" in
-    "DMZ")
-        echo "Tests per DMZ:"
-        nc -z -v 192.168.5.20 80 2>&1 | grep -E "(succeeded|failed)"
-        nc -z -v 192.168.5.30 53 2>&1 | grep -E "(succeeded|failed)"
-        nc -z -v 192.168.5.40 21 2>&1 | grep -E "(succeeded|failed)"
-        ;;
-    "Intranet")
-        echo "Tests per Intranet:"
-        nc -z -v 192.168.5.80 3306 2>&1 | grep -E "(succeeded|failed)"
-        nc -z -v 192.168.5.20 80 2>&1 | grep -E "(succeeded|failed)"
-        ;;
-    "NAT")
-        echo "Tests per NAT:"
-        nc -z -v 192.168.5.140 67 2>&1 | grep -E "(succeeded|failed)"
-        nc -z -v 192.168.5.20 80 2>&1 | grep -E "(succeeded|failed)"
-        nc -z -v 192.168.5.40 21 2>&1 | grep -E "(succeeded|failed)"
-        ;;
-esac
-
-echo
-echo "=== FI DEL DIAGNÒSTIC ==="
-EOF
-
-chmod +x /usr/local/bin/network_diagnosis.sh
-```
 
 ---
 
@@ -692,6 +549,3 @@ Tots els fitxers de configuració i scripts es troben a la carpeta `/files` del 
 **Última actualització:** 2025-11-11  
 **Versió del manual:** 2.1  
 
----
-
-**© 2025 - Manual d'Administrador - ITB Centre d'Estudis Tecnològics**
