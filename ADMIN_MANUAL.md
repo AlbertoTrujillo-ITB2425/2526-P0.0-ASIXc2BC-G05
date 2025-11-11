@@ -323,4 +323,3 @@ Tots els fitxers de configuració i scripts es troben a la carpeta `/files` del 
 ---
 
 **Última actualització:** 2025-11-11  
-**Administrador del sistema:** Alberto Trujillo ITB2425
