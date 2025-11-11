@@ -2,12 +2,17 @@
 
 ## Índex
 
-1. [Planificació del projecte](#planificació-del-projecte)
-2. [Esquema de xarxa](#esquema-de-xarxa)
-3. [Infraestructura desplegada](#infraestructura-desplegada)
-4. [Configuració de serveis](#configuració-de-serveis)
-5. [Manteniment i backup](#manteniment-i-backup)
-6. [Resolució de problemes](#resolució-de-problemes)
+1. [Planificació del projecte](#1-planificació-del-projecte)
+2. [Esquema de xarxa](#2-esquema-de-xarxa)
+3. [Infraestructura desplegada](#3-infraestructura-desplegada)
+4. [Configuració de serveis](#4-configuració-de-serveis)
+5. [Configuració del Router R-NCC](#5-configuració-del-router-r-ncc)
+6. [Servidor FTP/File Server](#6-servidor-ftpfile-server)
+7. [Configuració DNS](#7-configuració-dns)
+8. [Seguretat de xarxa](#8-seguretat-de-xarxa)
+9. [Eines de monitorització](#9-eines-de-monitorització)
+10. [Manteniment i backup](#10-manteniment-i-backup)
+11. [Resolució de problemes avançada](#11-resolució-de-problemes-avançada)
 
 ---
 
@@ -21,291 +26,700 @@ La planificació s'ha fet a **Proofhub** en **tres sprints** de **dues setmanes*
 
 ## 2. Esquema de xarxa
 
-L'arquitectura desplegada es representa al diagrama següent. 
+L'arquitectura desplegada es representa al diagrama següent amb tres xarxes diferents interconnectades pel **Router R-NCC**.
 
 **Descarregar esquema de xarxa:** [Packet Tracer](https://drive.google.com/file/d/1sruDIO3lY_b99p6khwERN0n-WELGoI5u/view?usp=sharing)
 
 <img width="910" height="565" alt="Captura de pantalla de 2025-10-28 15-11-17" src="https://github.com/user-attachments/assets/bae3db11-eba9-46ba-a99c-0463bbbf78d0" />
 
-La topologia usa el **router R-NCC** com a encaminador central amb **servidors a la VLAN de serveis** i **adreçament IP separat** per facilitar l'**escalabilitat** i la **gestió**.
+### 2.1 Topologia de xarxa detallada:
+
+#### **Xarxa NAT (Clients i DHCP) - 192.168.5.128/26**
+- **Subxarxa:** 192.168.5.128/26 (192.168.5.128 - 192.168.5.191)
+- **Gateway:** 192.168.5.129 (Interfície R-NCC)
+- **DHCP Server:** 192.168.5.140/26
+- **Client Linux (CLILIN):** 192.168.5.131/26 (via DHCP)
+- **Client Windows (CLIWIN):** 192.168.5.130/26 (via DHCP)
+
+#### **Xarxa DMZ (Serveis públics) - 192.168.5.0/26**
+- **Subxarxa:** 192.168.5.0/26 (192.168.5.0 - 192.168.5.63)
+- **Gateway:** 192.168.5.1 (Interfície R-NCC)
+- **Web Server (W-NCC):** 192.168.5.20/26
+- **DNS Server (D-NCC):** 192.168.5.30/26
+- **File Server/FTP (F-NCC):** 192.168.5.40/26
+
+#### **Xarxa Intranet (Serveis interns) - 192.168.5.64/26**
+- **Subxarxa:** 192.168.5.64/26 (192.168.5.64 - 192.168.5.127)
+- **Gateway:** 192.168.5.65 (Interfície R-NCC)
+- **Database Server (B-NCC):** 192.168.5.80/26
+
+#### **Router Central R-NCC**
+- **Interfície DMZ:** 192.168.5.1/26
+- **Interfície Intranet:** 192.168.5.65/26
+- **Interfície NAT:** 192.168.5.129/26
+- **Interfície WAN:** DHCP (connexió a Internet)
 
 ---
 
 ## 3. Infraestructura desplegada
 
 ### Router R-NCC
-- **Funció:** Encaminador entre subxarxes, gateway de sortida, punt de control entre VLANs i la xarxa de serveis
+- **Funció:** Encaminador central entre les tres xarxes (DMZ, Intranet, NAT)
+- **Interfícies:**
+  - **GigabitEthernet0/0:** WAN (Internet) - DHCP
+  - **GigabitEthernet0/1:** DMZ - 192.168.5.1/26
+  - **GigabitEthernet0/2:** Intranet - 192.168.5.65/26
+  - **GigabitEthernet0/3:** NAT - 192.168.5.129/26
+- **Protocols:** NAT/PAT, Static Routes, ACLs
 - **Fitxer de configuració:** [router_r-ncc.conf](https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/router_r-ncc.conf)
 
-### DHCP Server
-- **Funció:** Assigna adreces IP dinàmiques per les VLANs, amb reserves per servidors i dispositius
+### DHCP Server (Xarxa NAT)
+- **Funció:** Assigna adreces IP dinàmiques als clients de la xarxa NAT
+- **IP:** 192.168.5.140/26
+- **Pool d'adreces:** 192.168.5.130-192.168.5.135
+- **Gateway:** 192.168.5.129
+- **DNS:** 192.168.5.30
 - **Fitxer de configuració:** [dhcpd.conf](https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/dhcp/dhcpd.conf)
 
-### Database Server B-NCC
-- **Funció:** Servidor de base de dades MySQL/MariaDB amb còpies de seguretat i permisos restringits
+### Web Server W-NCC (DMZ)
+- **Funció:** Servidor web que serveix l'aplicació d'equipaments educatius
+- **IP:** 192.168.5.20/26
+- **Ports:** 80 (HTTP), 443 (HTTPS)
+- **Accés:** Des d'Internet i xarxes internes
+- **Fitxer de configuració:** [webserver_config.conf](https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/webserver_config.conf)
+
+### DNS Server D-NCC (DMZ)
+- **Funció:** Resolució de noms per totes les xarxes
+- **IP:** 192.168.5.30/26
+- **Ports:** 53 (DNS TCP/UDP)
+- **Zones:** g5.local, reverse zones
+- **Accés:** Des de totes les xarxes
+
+### File Server F-NCC (DMZ)
+- **Funció:** Servidor FTP i compartició de fitxers
+- **IP:** 192.168.5.40/26
+- **Protocols:** FTP, SFTP, SMB/CIFS
+- **Ports:** 21 (FTP), 22 (SFTP), 139/445 (SMB)
+- **Accés:** Des d'Internet i xarxes internes
+
+### Database Server B-NCC (Intranet)
+- **Funció:** Servidor de base de dades MySQL amb accés restringit
+- **IP:** 192.168.5.80/26
+- **Ports:** 3306 (MySQL)
+- **Accés:** Només des de DMZ (Web Server) i Intranet
 - **Fitxers:**
   - [mysql_init.sql](https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/mysql_init.sql)
   - [backup_mysql.sh](https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/backup_mysql.sh)
 
-### Web Server W-NCC
-- **Funció:** Servidor que serveix aplicació i es connecta amb B-NCC amb usuari d'aplicació
-- **Fitxer de configuració:** [webserver_config.conf](https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/webserver_config.conf)
-- **Estructura del projecte:**
-  - `public/`: arxius servits pel servidor web (DocumentRoot)
-  - `src/`: codi font (models, controllers, helpers)
-  - `config/`: configuració (config.php). **NO commetis secrets**
-  - `sql/`: DDL i scripts d'inicialització
-  - `logs/`: logs d'execució (ignorar a git)
-
-### File Server F-NCC
-- **Funció:** Compartir fitxers a la xarxa amb altres usuaris corporatius o clients a través de la DMZ
+### Clients (Xarxa NAT)
+- **Client Linux (CLILIN):** 192.168.5.131/26 (assignació DHCP)
+- **Client Windows (CLIWIN):** 192.168.5.130/26 (assignació DHCP)
 
 ---
 
 ## 4. Configuració de serveis
 
-### 4.1 Configuració DHCP
+### 4.1 Configuració DHCP Actualitzada
 
 **Fitxer:** `/etc/dhcp/dhcpd.conf`
 
 ```bash
-option domain-name "example.org";
-option domain-name-servers ns1.example.org, ns2.example.org;
-
-default-lease-time 600;
-max-lease-time 7200;
-
-ddns-update-style none;
+# Configuració global del DHCP
+option domain-name "g5.local";
+option domain-name-servers 192.168.5.30;
+default-lease-time 86400;    # 24 hores
+max-lease-time 604800;       # 1 setmana
 authoritative;
 
-subnet 192.168.5.0 netmask 255.255.255.0 {
-  option routers 192.168.5.1;
-  option subnet-mask 255.255.255.0;
+# Xarxa NAT - Clients
+subnet 192.168.5.128 netmask 255.255.255.192 {
+  range 192.168.5.132 192.168.5.139;
+  option routers 192.168.5.129;
+  option subnet-mask 255.255.255.192;
   option domain-name-servers 192.168.5.30;
+  option broadcast-address 192.168.5.191;
 }
 
-host PC0_CLIWIN {
-  hardware ethernet 52:54:00:1E:47:7A; #Cambia per la MAC del teu client Windows
-  fixed-address 192.168.5.130; 
-}
-
-host PC1_CLILIN {
-  hardware ethernet 52:54:00:39:be:b1; #Cambia per la MAC del teu client linux
+# Reserves estàtiques per clients
+host client-linux {
+  hardware ethernet 52:54:00:39:be:b1;
   fixed-address 192.168.5.131;
 }
+
+host client-windows {
+  hardware ethernet 52:54:00:1E:47:7A;
+  fixed-address 192.168.5.130;
+}
+
+# Declaracions de xarxes (no assigna IPs però reconeix les xarxes)
+subnet 192.168.5.0 netmask 255.255.255.192 {
+  # DMZ - només declaració
+}
+
+subnet 192.168.5.64 netmask 255.255.255.192 {
+  # Intranet - només declaració
+}
 ```
 
-**Descarregar fitxer complet:** [dhcpd.conf](https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/dhcp/dhcpd.conf)
+---
 
-### 4.2 Configuració MySQL
+## 5. Configuració del Router R-NCC
 
-#### Creació de la base de dades
+### 5.1 Configuració completa del router
 
-```sql
-CREATE DATABASE Educacio;
-USE Educacio;
+```cisco
+! Configuració bàsica
+hostname R-NCC
+enable secret cisco123
+username admin privilege 15 secret admin123
 
-CREATE TABLE equipaments_educacio (
-    register_id INTEGER PRIMARY KEY,
-    name TEXT,
-    institution_id TEXT,
-    institution_name TEXT,
-    created TEXT,
-    modified TEXT,
-    addresses_roadtype_id TEXT,
-    addresses_roadtype_name TEXT,
-    addresses_road_id INTEGER,
-    addresses_road_name TEXT,
-    addresses_start_street_number TEXT,
-    addresses_end_street_number TEXT,
-    addresses_neighborhood_id TEXT,
-    addresses_neighborhood_name TEXT,
-    addresses_district_id TEXT,
-    addresses_district_name TEXT,
-    addresses_zip_code TEXT,
-    addresses_town TEXT,
-    addresses_main_address INTEGER,
-    addresses_type TEXT,
-    values_id INTEGER,
-    values_attribute_id INTEGER,
-    values_category TEXT,
-    values_attribute_name TEXT,
-    values_value TEXT,
-    values_outstanding INTEGER,
-    values_description TEXT,
-    secondary_filters_id INTEGER,
-    secondary_filters_name TEXT,
-    secondary_filters_fullpath TEXT,
-    secondary_filters_tree TEXT,
-    secondary_filters_asia_id TEXT,
-    geo_epgs_25831_x REAL,
-    geo_epgs_25831_y REAL,
-    geo_epgs_4326_lat REAL,
-    geo_epgs_4326_lon REAL,
-    estimated_dates TEXT,
-    start_date TEXT,
-    end_date TEXT,
-    timetable TEXT
-);
+! Configuració d'interfícies
+interface GigabitEthernet0/0
+ description "Connexió a Internet"
+ ip address dhcp
+ ip nat outside
+ no shutdown
+
+interface GigabitEthernet0/1
+ description "DMZ - Serveis públics"
+ ip address 192.168.5.1 255.255.255.192
+ ip nat inside
+ no shutdown
+
+interface GigabitEthernet0/2
+ description "Intranet - Serveis interns"
+ ip address 192.168.5.65 255.255.255.192
+ ip nat inside
+ no shutdown
+
+interface GigabitEthernet0/3
+ description "NAT - Clients i DHCP"
+ ip address 192.168.5.129 255.255.255.192
+ ip nat inside
+ no shutdown
+
+! Routing estàtic per defecte
+ip route 0.0.0.0 0.0.0.0 GigabitEthernet0/0
+
+! Configuració NAT/PAT
+access-list 10 permit 192.168.5.0 0.0.0.63      ! DMZ
+access-list 10 permit 192.168.5.64 0.0.0.63     ! Intranet
+access-list 10 permit 192.168.5.128 0.0.0.63    ! NAT
+ip nat inside source list 10 interface GigabitEthernet0/0 overload
+
+! Port forwarding per serveis públics
+ip nat inside source static tcp 192.168.5.20 80 interface GigabitEthernet0/0 80
+ip nat inside source static tcp 192.168.5.20 443 interface GigabitEthernet0/0 443
+ip nat inside source static tcp 192.168.5.40 21 interface GigabitEthernet0/0 21
+ip nat inside source static tcp 192.168.5.40 22 interface GigabitEthernet0/0 22
+
+! ACLs de seguretat
+! Permetre accés a serveis públics des d'Internet
+ip access-list extended INTERNET_IN
+ permit tcp any host 192.168.5.20 eq 80
+ permit tcp any host 192.168.5.20 eq 443
+ permit tcp any host 192.168.5.40 eq 21
+ permit tcp any host 192.168.5.40 eq 22
+ permit udp any host 192.168.5.30 eq 53
+ deny ip any any log
+
+! ACL per controlar accés entre xarxes internes
+ip access-list extended DMZ_TO_INTRANET
+ permit tcp host 192.168.5.20 host 192.168.5.80 eq 3306
+ deny ip 192.168.5.0 0.0.0.63 192.168.5.64 0.0.0.63 log
+ permit ip any any
+
+ip access-list extended NAT_TO_DMZ
+ permit ip 192.168.5.128 0.0.0.63 192.168.5.0 0.0.0.63
+ permit ip any any
+
+! Aplicar ACLs a interfícies
+interface GigabitEthernet0/0
+ ip access-group INTERNET_IN in
+
+interface GigabitEthernet0/1
+ ip access-group DMZ_TO_INTRANET out
+
+! SSH Configuration
+ip domain-name g5.local
+crypto key generate rsa modulus 2048
+line vty 0 4
+ login local
+ transport input ssh
+ exec-timeout 10 0
+
+! Logs i debugging
+logging buffered 16384
+logging console warnings
+service timestamps log datetime msec
+
+! Guardar configuració
+copy running-config startup-config
 ```
 
-#### Importar dades CSV
+---
 
-```sql
-LOAD DATA LOCAL INFILE '/home/isard/equipaments_utf8.csv'
-INTO TABLE equipaments_educacio
-CHARACTER SET utf8mb4
-FIELDS TERMINATED BY ','
-OPTIONALLY ENCLOSED BY '"'
-LINES TERMINATED BY '\n'
-IGNORE 1 LINES
-(@register_id, name, institution_id, institution_name, created, modified,
- addresses_roadtype_id, addresses_roadtype_name, addresses_road_id,
- addresses_road_name, addresses_start_street_number, addresses_end_street_number,
- addresses_neighborhood_id, addresses_neighborhood_name, addresses_district_id,
- addresses_district_name, addresses_zip_code, addresses_town,
- @addresses_main_address, addresses_type, values_id, values_attribute_id,
- values_category, values_attribute_name, values_value, @values_outstanding,
- values_description, secondary_filters_id, secondary_filters_name,
- secondary_filters_fullpath, secondary_filters_tree, secondary_filters_asia_id,
- @geo_epgs_25831_x, @geo_epgs_25831_y, @geo_epgs_4326_lat, @geo_epgs_4326_lon,
- estimated_dates, start_date, end_date, timetable)
-SET
- register_id = TRIM(LEADING 0xEFBBBF FROM @register_id),
- addresses_main_address = IF(@addresses_main_address = 'True', 1, 0),
- values_outstanding = IF(@values_outstanding = 'True', 1, 0),
- geo_epgs_25831_x = NULLIF(@geo_epgs_25831_x, ''),
- geo_epgs_25831_y = NULLIF(@geo_epgs_25831_y, ''),
- geo_epgs_4326_lat = NULLIF(@geo_epgs_4326_lat, ''),
- geo_epgs_4326_lon = NULLIF(@geo_epgs_4326_lon, '');
-```
+## 6. Servidor FTP/File Server
 
-**Nota:** Recorda col·locar el fitxer .csv en la ruta indicada abans d'executar.
+### 6.1 Configuració vsftpd per F-NCC (192.168.5.40)
 
-#### Crear usuari d'aplicació
+**Fitxer:** `/etc/vsftpd.conf`
 
 ```bash
-sudo mysql -u root -p <<'SQL'
-CREATE DATABASE IF NOT EXISTS `Educacio` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-CREATE USER IF NOT EXISTS 'bchecker'@'localhost' IDENTIFIED BY 'bchecker121';
-GRANT ALL PRIVILEGES ON `Educacio`.* TO 'bchecker'@'localhost';
-FLUSH PRIVILEGES;
-SQL
+# Configuració bàsica
+listen=YES
+listen_ipv6=NO
+anonymous_enable=NO
+local_enable=YES
+write_enable=YES
+local_umask=022
+
+# Seguretat
+chroot_local_user=YES
+chroot_list_enable=YES
+chroot_list_file=/etc/vsftpd.chroot_list
+allow_writeable_chroot=YES
+
+# Configuració de xarxa
+listen_address=192.168.5.40
+pasv_enable=YES
+pasv_min_port=40000
+pasv_max_port=50000
+pasv_address=192.168.5.40
+
+# SSL/TLS
+ssl_enable=YES
+rsa_cert_file=/etc/ssl/certs/vsftpd.crt
+rsa_private_key_file=/etc/ssl/private/vsftpd.key
+ssl_tlsv1=YES
+ssl_sslv2=NO
+ssl_sslv3=NO
+require_ssl_reuse=NO
+ssl_ciphers=HIGH
+
+# Logs
+xferlog_enable=YES
+xferlog_file=/var/log/vsftpd.log
+log_ftp_protocol=YES
+
+# Limits
+max_clients=50
+max_per_ip=5
 ```
 
-**Per connexions des d'altra màquina:**
+---
+
+## 7. Configuració DNS
+
+### 7.1 Configuració DNS per D-NCC (192.168.5.30)
+
+**Fitxer:** `/etc/bind/db.g5.local`
+
+```bind
+;
+; BIND data file for g5.local
+;
+$TTL    604800
+@       IN      SOA     dns.g5.local. admin.g5.local. (
+                     2025111101         ; Serial
+                         604800         ; Refresh
+                          86400         ; Retry
+                        2419200         ; Expire
+                         604800 )       ; Negative Cache TTL
+;
+@       IN      NS      dns.g5.local.
+@       IN      A       192.168.5.1
+
+; Servidors DMZ
+dns     IN      A       192.168.5.30
+web     IN      A       192.168.5.20
+ftp     IN      A       192.168.5.40
+files   IN      CNAME   ftp
+www     IN      CNAME   web
+
+; Servidor Intranet
+db      IN      A       192.168.5.80
+database IN     CNAME   db
+
+; Router i xarxes
+router  IN      A       192.168.5.1
+gateway IN      CNAME   router
+
+; Servidor DHCP
+dhcp    IN      A       192.168.5.140
+
+; Clients
+clilin  IN      A       192.168.5.131
+cliwin  IN      A       192.168.5.130
+```
+
+### 7.2 Zones reverse
+
+**Fitxer:** `/etc/bind/db.192.168.5.0` (DMZ)
+
+```bind
+$TTL    604800
+@       IN      SOA     dns.g5.local. admin.g5.local. (
+                     2025111101
+                         604800
+                          86400
+                        2419200
+                         604800 )
+;
+@       IN      NS      dns.g5.local.
+
+1       IN      PTR     router.g5.local.
+20      IN      PTR     web.g5.local.
+30      IN      PTR     dns.g5.local.
+40      IN      PTR     ftp.g5.local.
+```
+
+**Fitxer:** `/etc/bind/db.192.168.5.64` (Intranet)
+
+```bind
+$TTL    604800
+@       IN      SOA     dns.g5.local. admin.g5.local. (
+                     2025111101
+                         604800
+                          86400
+                        2419200
+                         604800 )
+;
+@       IN      NS      dns.g5.local.
+
+65      IN      PTR     router.g5.local.
+80      IN      PTR     db.g5.local.
+```
+
+**Fitxer:** `/etc/bind/db.192.168.5.128` (NAT)
+
+```bind
+$TTL    604800
+@       IN      SOA     dns.g5.local. admin.g5.local. (
+                     2025111101
+                         604800
+                          86400
+                        2419200
+                         604800 )
+;
+@       IN      NS      dns.g5.local.
+
+129     IN      PTR     router.g5.local.
+130     IN      PTR     cliwin.g5.local.
+131     IN      PTR     clilin.g5.local.
+140     IN      PTR     dhcp.g5.local.
+```
+
+---
+
+## 8. Seguretat de xarxa
+
+### 8.1 Configuració del firewall per xarxa
+
+#### Web Server W-NCC (192.168.5.20)
 ```bash
-sudo mysql -u root -p <<'SQL'
-CREATE USER IF NOT EXISTS 'bchecker'@'10.0.0.5' IDENTIFIED BY 'bchecker121';
-GRANT ALL PRIVILEGES ON `Educacio`.* TO 'bchecker'@'10.0.0.5';
-FLUSH PRIVILEGES;
-SQL
+# UFW per Web Server
+sudo ufw enable
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+
+# Permetre connexions web
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+
+# Permetre SSH només des de xarxes internes
+sudo ufw allow from 192.168.5.64/26 to any port 22
+sudo ufw allow from 192.168.5.128/26 to any port 22
+
+# Permetre connexió a base de dades
+sudo ufw allow out 3306/tcp
 ```
 
-### 4.3 Configuració Apache/Web Server
+#### Database Server B-NCC (192.168.5.80)
+```bash
+# UFW per Database Server
+sudo ufw enable
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
 
-#### Instal·lació inicial
+# Permetre MySQL només des del web server
+sudo ufw allow from 192.168.5.20 to any port 3306
+
+# SSH només des de xarxa intranet
+sudo ufw allow from 192.168.5.64/26 to any port 22
+```
+
+#### File Server F-NCC (192.168.5.40)
+```bash
+# UFW per File Server
+sudo ufw enable
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+
+# Serveis FTP
+sudo ufw allow 21/tcp
+sudo ufw allow 20/tcp
+sudo ufw allow 40000:50000/tcp  # Ports passius FTP
+
+# SSH/SFTP
+sudo ufw allow 22/tcp
+
+# SMB/CIFS només xarxes internes
+sudo ufw allow from 192.168.5.128/26 to any port 139
+sudo ufw allow from 192.168.5.128/26 to any port 445
+```
+
+---
+
+## 9. Eines de monitorització
+
+### 9.1 Script de monitorització de xarxa actualitzat
 
 ```bash
-sudo apt install git
-cd /var/www/html
-git clone https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05.git
-```
+cat << 'EOF' > /usr/local/bin/network_monitor.sh
+#!/bin/bash
 
-#### Activar HTTPS
+LOGFILE="/var/log/network_monitor.log"
+DATE=$(date '+%Y-%m-%d %H:%M:%S')
 
-```bash
-sudo a2enmod ssl
-sudo a2enmod headers
-sudo a2enmod rewrite
-sudo systemctl restart apache2
-```
+echo "$DATE - === INICI MONITORITZACIÓ ===" >> $LOGFILE
 
-#### Generar certificat SSL
+# Hosts per xarxa
+declare -A HOSTS
+HOSTS["Router"]="192.168.5.1"
+HOSTS["Web-Server"]="192.168.5.20"
+HOSTS["DNS-Server"]="192.168.5.30"
+HOSTS["File-Server"]="192.168.5.40"
+HOSTS["DB-Server"]="192.168.5.80"
+HOSTS["DHCP-Server"]="192.168.5.140"
+HOSTS["Client-Windows"]="192.168.5.130"
+HOSTS["Client-Linux"]="192.168.5.131"
 
-```bash
-sudo openssl req -x509 -newkey rsa:4096 -keyout /etc/ssl/private/equipaments.key -out /etc/ssl/certs/equipaments.crt -days 365
-```
+# Verificar conectivitat
+for name in "${!HOSTS[@]}"; do
+    ip="${HOSTS[$name]}"
+    if ping -c 1 -W 2 "$ip" > /dev/null 2>&1; then
+        echo "$DATE - OK: $name ($ip) accessible" >> $LOGFILE
+    else
+        echo "$DATE - ERROR: $name ($ip) no accessible" >> $LOGFILE
+    fi
+done
 
-#### Configuració Virtual Host HTTPS
+# Verificar serveis crítics
+declare -A SERVICES
+SERVICES["Web-HTTP"]="192.168.5.20:80"
+SERVICES["Web-HTTPS"]="192.168.5.20:443"
+SERVICES["DNS"]="192.168.5.30:53"
+SERVICES["FTP"]="192.168.5.40:21"
+SERVICES["SSH-FTP"]="192.168.5.40:22"
+SERVICES["MySQL"]="192.168.5.80:3306"
 
-Afegir a `/etc/apache2/sites-available/equipaments.conf`:
-
-```apache
-<VirtualHost *:443>
-    ServerAdmin webmaster@g5.cat   
-    ServerName g5.cat           
-    DocumentRoot /var/www/html/public                
-
-    <Directory /var/www/html/public>
-        Options Indexes FollowSymLinks
-        AllowOverride All
-        Require all granted
-    </Directory>
+for service in "${!SERVICES[@]}"; do
+    host_port="${SERVICES[$service]}"
+    host=$(echo $host_port | cut -d':' -f1)
+    port=$(echo $host_port | cut -d':' -f2)
     
-    SSLEngine on
-    SSLCertificateFile /etc/ssl/certs/equipaments.crt
-    SSLCertificateKeyFile /etc/ssl/private/equipaments.key
+    if nc -z -w5 $host $port > /dev/null 2>&1; then
+        echo "$DATE - OK: $service ($host_port) disponible" >> $LOGFILE
+    else
+        echo "$DATE - ERROR: $service ($host_port) no disponible" >> $LOGFILE
+    fi
+done
 
-    ErrorLog ${APACHE_LOG_DIR}/equipaments_ssl_error.log
-    CustomLog ${APACHE_LOG_DIR}/equipaments_ssl_access.log combined
-</VirtualHost>
-```
+echo "$DATE - === FI MONITORITZACIÓ ===" >> $LOGFILE
+EOF
 
-#### Habilitar el site
+chmod +x /usr/local/bin/network_monitor.sh
 
-```bash
-sudo a2ensite equipaments.conf
-sudo systemctl reload apache2
-```
-
----
-
-## 5. Manteniment i backup
-
-### Script de backup MySQL
-
-**Fitxer:** [backup_mysql.sh](https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/backup_mysql.sh)
-
-### Importar backup
-
-```bash
-sudo mysql -u root -p Educacio < backup.sql
-```
-
-**Alternativa des del client MySQL:**
-```bash
-sudo mysql -u root -p Educacio
-mysql> SOURCE /$HOME/backup.sql;
+# Executar cada 10 minuts
+echo "*/10 * * * * /usr/local/bin/network_monitor.sh" | sudo crontab -
 ```
 
 ---
 
-## 6. Resolució de problemes
+## 10. Manteniment i backup
 
-### Comprovacions ràpides
+### 10.1 Script de backup actualitzat per la nova topologia
 
-#### Verificar usuari MySQL
 ```bash
-sudo mysql -u root -p -e "SELECT User, Host FROM mysql.user WHERE User='bchecker';"
+cat << 'EOF' > /usr/local/bin/system_backup.sh
+#!/bin/bash
+
+BACKUP_DIR="/backups"
+DATE=$(date +%Y%m%d_%H%M%S)
+LOG_FILE="/var/log/backup.log"
+
+mkdir -p $BACKUP_DIR
+echo "$(date) - Iniciant backup del sistema" >> $LOG_FILE
+
+# Backup per servidor segons la seva funció
+case "$(hostname -I | awk '{print $1}')" in
+    "192.168.5.20") # Web Server
+        echo "$(date) - Backup Web Server..." >> $LOG_FILE
+        tar -czf $BACKUP_DIR/web_configs_$DATE.tar.gz \
+            /etc/apache2/ \
+            /var/www/ \
+            /etc/ssl/ 2>> $LOG_FILE
+        ;;
+    "192.168.5.30") # DNS Server
+        echo "$(date) - Backup DNS Server..." >> $LOG_FILE
+        tar -czf $BACKUP_DIR/dns_configs_$DATE.tar.gz \
+            /etc/bind/ \
+            /var/cache/bind/ 2>> $LOG_FILE
+        ;;
+    "192.168.5.40") # File Server
+        echo "$(date) - Backup File Server..." >> $LOG_FILE
+        tar -czf $BACKUP_DIR/file_configs_$DATE.tar.gz \
+            /etc/vsftpd.conf \
+            /etc/samba/ \
+            /srv/samba/ \
+            /home/ftpuser/ 2>> $LOG_FILE
+        ;;
+    "192.168.5.80") # Database Server
+        echo "$(date) - Backup Database Server..." >> $LOG_FILE
+        mysqldump -u root -p'password' --all-databases > $BACKUP_DIR/mysql_$DATE.sql 2>> $LOG_FILE
+        tar -czf $BACKUP_DIR/db_configs_$DATE.tar.gz /etc/mysql/ 2>> $LOG_FILE
+        ;;
+    "192.168.5.140") # DHCP Server
+        echo "$(date) - Backup DHCP Server..." >> $LOG_FILE
+        tar -czf $BACKUP_DIR/dhcp_configs_$DATE.tar.gz \
+            /etc/dhcp/ \
+            /var/lib/dhcp/ 2>> $LOG_FILE
+        ;;
+esac
+
+# Neteja de backups antics
+find $BACKUP_DIR -name "*_$DATE.*" -mtime +30 -delete
+
+echo "$(date) - Backup completat per $(hostname -I | awk '{print $1}')" >> $LOG_FILE
+EOF
+
+chmod +x /usr/local/bin/system_backup.sh
 ```
 
-#### Mostrar permisos d'usuari
+---
+
+## 11. Resolució de problemes avançada
+
+### 11.1 Diagnòstic per xarxes
+
 ```bash
-sudo mysql -u root -p -e "SHOW GRANTS FOR 'bchecker'@'localhost';"
+cat << 'EOF' > /usr/local/bin/network_diagnosis.sh
+#!/bin/bash
+
+echo "=== DIAGNÒSTIC DE XARXA G5 Systems ==="
+echo "Data: $(date)"
+echo "IP Local: $(hostname -I | awk '{print $1}')"
+echo
+
+# Determinar quina xarxa som
+LOCAL_IP=$(hostname -I | awk '{print $1}')
+case "$LOCAL_IP" in
+    192.168.5.2[0-9]|192.168.5.[3-5][0-9]|192.168.5.6[0-3])
+        NETWORK="DMZ"
+        GATEWAY="192.168.5.1"
+        ;;
+    192.168.5.6[4-9]|192.168.5.[7-9][0-9]|192.168.5.1[0-2][0-7])
+        NETWORK="Intranet"
+        GATEWAY="192.168.5.65"
+        ;;
+    192.168.5.12[8-9]|192.168.5.1[3-8][0-9]|192.168.5.19[0-1])
+        NETWORK="NAT"
+        GATEWAY="192.168.5.129"
+        ;;
+    *)
+        NETWORK="Desconeguda"
+        GATEWAY="N/A"
+        ;;
+esac
+
+echo "Xarxa detectada: $NETWORK"
+echo "Gateway: $GATEWAY"
+echo
+
+# Test de conectivitat bàsic
+echo "1. TEST DE CONECTIVITAT:"
+echo "- Ping al gateway ($GATEWAY):"
+ping -c 3 $GATEWAY
+echo
+
+echo "- Ping a DNS (192.168.5.30):"
+ping -c 3 192.168.5.30
+echo
+
+echo "- Ping a Internet (8.8.8.8):"
+ping -c 3 8.8.8.8
+echo
+
+# Resolució DNS
+echo "2. RESOLUCIÓ DNS:"
+nslookup web.g5.local 192.168.5.30
+echo
+
+# Verificar rutes
+echo "3. TAULA DE RUTING:"
+ip route show
+echo
+
+# Ports oberts
+echo "4. PORTS OBERTS LOCALS:"
+netstat -tlnp | head -20
+echo
+
+# Test de serveis per xarxa
+echo "5. TEST DE SERVEIS SEGONS XARXA:"
+case "$NETWORK" in
+    "DMZ")
+        echo "Tests per DMZ:"
+        nc -z -v 192.168.5.20 80 2>&1 | grep -E "(succeeded|failed)"
+        nc -z -v 192.168.5.30 53 2>&1 | grep -E "(succeeded|failed)"
+        nc -z -v 192.168.5.40 21 2>&1 | grep -E "(succeeded|failed)"
+        ;;
+    "Intranet")
+        echo "Tests per Intranet:"
+        nc -z -v 192.168.5.80 3306 2>&1 | grep -E "(succeeded|failed)"
+        nc -z -v 192.168.5.20 80 2>&1 | grep -E "(succeeded|failed)"
+        ;;
+    "NAT")
+        echo "Tests per NAT:"
+        nc -z -v 192.168.5.140 67 2>&1 | grep -E "(succeeded|failed)"
+        nc -z -v 192.168.5.20 80 2>&1 | grep -E "(succeeded|failed)"
+        nc -z -v 192.168.5.40 21 2>&1 | grep -E "(succeeded|failed)"
+        ;;
+esac
+
+echo
+echo "=== FI DEL DIAGNÒSTIC ==="
+EOF
+
+chmod +x /usr/local/bin/network_diagnosis.sh
 ```
 
-#### Verificar serveis
-```bash
-sudo systemctl status apache2
-sudo systemctl status mysql
-sudo systemctl status isc-dhcp-server
-```
+---
 
-#### Logs importants
-- Apache: `/var/log/apache2/`
-- MySQL: `/var/log/mysql/`
-- DHCP: `/var/log/syslog`
+## Resum de la topologia actualitzada
+
+### Taula d'adreces IP:
+
+| Dispositiu | IP | Xarxa | Funció |
+|------------|----|---------|--------------------|
+| R-NCC (WAN) | DHCP | Internet | Gateway principal |
+| R-NCC (DMZ) | 192.168.5.1/26 | DMZ | Gateway DMZ |
+| R-NCC (Intranet) | 192.168.5.65/26 | Intranet | Gateway Intranet |
+| R-NCC (NAT) | 192.168.5.129/26 | NAT | Gateway NAT |
+| W-NCC | 192.168.5.20/26 | DMZ | Servidor Web |
+| D-NCC | 192.168.5.30/26 | DMZ | Servidor DNS |
+| F-NCC | 192.168.5.40/26 | DMZ | Servidor FTP/Files |
+| B-NCC | 192.168.5.80/26 | Intranet | Servidor BD |
+| DHCP Server | 192.168.5.140/26 | NAT | Servidor DHCP |
+| CLIWIN | 192.168.5.130/26 | NAT | Client Windows |
+| CLILIN | 192.168.5.131/26 | NAT | Client Linux |
+
+### Flux de tràfic:
+1. **Internet → DMZ:** Accés públic a serveis web, FTP i DNS
+2. **DMZ → Intranet:** Només Web Server pot accedir a Base de Dades
+3. **NAT → DMZ:** Clients poden accedir a tots els serveis DMZ
+4. **NAT → Internet:** Sortida a Internet via NAT/PAT
 
 ---
 
@@ -317,9 +731,16 @@ Tots els fitxers de configuració i scripts es troben a la carpeta `/files` del 
 - [dhcpd.conf](https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/dhcp/dhcpd.conf)
 - [mysql_init.sql](https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/mysql_init.sql)
 - [backup_mysql.sh](https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/backup_mysql.sh)
+- [backup.sql](https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/backup.sql)
 - [webserver_config.conf](https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/webserver_config.conf)
 - [equipaments.conf](https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/apache2/equipaments.conf)
 
 ---
 
 **Última actualització:** 2025-11-11  
+**Administrador del sistema:** Alberto Trujillo ITB2425  
+**Versió del manual:** 2.1  
+
+---
+
+**© 2025 - Manual d'Administrador - ITB Centre d'Estudis Tecnològics**
