@@ -157,95 +157,56 @@ host CLIWIN {
 ## 5. Configuració del Router R-NCC
 
 ### 5.1 Configuració completa del router
+```bash
+#!/bin/bash
+# Router Linux - Configuració resumida (~50 línies)
 
-```cisco
-! Configuració bàsica
-hostname R-NCC
-enable secret cisco123
-username admin privilege 15 secret admin123
+hostnamectl set-hostname R-NCC
+useradd admin -m -s /bin/bash
+echo "admin:admin123" | chpasswd
+usermod -aG sudo admin
 
-! Configuració d'interfícies
-interface GigabitEthernet0/0
- description "Connexió a Internet"
- ip address dhcp
- ip nat outside
- no shutdown
+# Interfícies
+ip link set enp0s3 up && dhclient enp0s3              # Internet (DHCP)
+ip addr add 192.168.5.1/26 dev enp0s8 && ip link set enp0s8 up   # DMZ
+ip addr add 192.168.5.65/26 dev enp0s9 && ip link set enp0s9 up  # Intranet
+ip addr add 192.168.5.129/26 dev enp0s10 && ip link set enp0s10 up # NAT/DHCP
 
-interface GigabitEthernet0/1
- description "DMZ - Serveis públics"
- ip address 192.168.5.1 255.255.255.192
- ip nat inside
- no shutdown
+# Routing
+ip route add default via $(ip route | grep default | awk '{print $3}') dev enp0s3
+echo 1 > /proc/sys/net/ipv4/ip_forward
 
-interface GigabitEthernet0/2
- description "Intranet - Serveis interns"
- ip address 192.168.5.65 255.255.255.192
- ip nat inside
- no shutdown
+# NAT/PAT
+iptables -t nat -A POSTROUTING -s 192.168.5.0/24 -o enp0s3 -j MASQUERADE
 
-interface GigabitEthernet0/3
- description "NAT - Clients i DHCP"
- ip address 192.168.5.129 255.255.255.192
- ip nat inside
- no shutdown
+# Port forwarding
+iptables -t nat -A PREROUTING -i enp0s3 -p tcp --dport 80  -j DNAT --to 192.168.5.20:80
+iptables -t nat -A PREROUTING -i enp0s3 -p tcp --dport 443 -j DNAT --to 192.168.5.20:443
+iptables -t nat -A PREROUTING -i enp0s3 -p tcp --dport 21  -j DNAT --to 192.168.5.40:21
+iptables -t nat -A PREROUTING -i enp0s3 -p tcp --dport 22  -j DNAT --to 192.168.5.40:22
 
-! Routing estàtic per defecte
-ip route 0.0.0.0 0.0.0.0 GigabitEthernet0/0
+# ACL Internet → serveis públics
+iptables -A FORWARD -i enp0s3 -p tcp -d 192.168.5.20 --dport 80  -j ACCEPT
+iptables -A FORWARD -i enp0s3 -p tcp -d 192.168.5.20 --dport 443 -j ACCEPT
+iptables -A FORWARD -i enp0s3 -p tcp -d 192.168.5.40 --dport 21  -j ACCEPT
+iptables -A FORWARD -i enp0s3 -p tcp -d 192.168.5.40 --dport 22  -j ACCEPT
+iptables -A FORWARD -i enp0s3 -p udp -d 192.168.5.30 --dport 53  -j ACCEPT
+iptables -A FORWARD -i enp0s3 -j DROP
 
-! Configuració NAT/PAT
-access-list 10 permit 192.168.5.0 0.0.0.63      ! DMZ
-access-list 10 permit 192.168.5.64 0.0.0.63     ! Intranet
-access-list 10 permit 192.168.5.128 0.0.0.63    ! NAT
-ip nat inside source list 10 interface GigabitEthernet0/0 overload
+# ACL DMZ → Intranet (només MySQL)
+iptables -A FORWARD -s 192.168.5.20 -d 192.168.5.80 -p tcp --dport 3306 -j ACCEPT
+iptables -A FORWARD -s 192.168.5.0/26 -d 192.168.5.64/26 -j DROP
 
-! Port forwarding per serveis públics
-ip nat inside source static tcp 192.168.5.20 80 interface GigabitEthernet0/0 80
-ip nat inside source static tcp 192.168.5.20 443 interface GigabitEthernet0/0 443
-ip nat inside source static tcp 192.168.5.40 21 interface GigabitEthernet0/0 21
-ip nat inside source static tcp 192.168.5.40 22 interface GigabitEthernet0/0 22
+# ACL NAT → DMZ
+iptables -A FORWARD -s 192.168.5.128/26 -d 192.168.5.0/26 -j ACCEPT
 
-! ACLs de seguretat
-! Permetre accés a serveis públics des d'Internet
-ip access-list extended INTERNET_IN
- permit tcp any host 192.168.5.20 eq 80
- permit tcp any host 192.168.5.20 eq 443
- permit tcp any host 192.168.5.40 eq 21
- permit tcp any host 192.168.5.40 eq 22
- permit udp any host 192.168.5.30 eq 53
- deny ip any any log
+# SSH segur
+apt-get install -y openssh-server rsyslog
+sed -i 's/#Port 22/Port 22/' /etc/ssh/sshd_config
+systemctl restart ssh && systemctl enable rsyslog
 
-! ACL per controlar accés entre xarxes internes
-ip access-list extended DMZ_TO_INTRANET
- permit tcp host 192.168.5.20 host 192.168.5.80 eq 3306
- deny ip 192.168.5.0 0.0.0.63 192.168.5.64 0.0.0.63 log
- permit ip any any
-
-ip access-list extended NAT_TO_DMZ
- permit ip 192.168.5.128 0.0.0.63 192.168.5.0 0.0.0.63
- permit ip any any
-
-! Aplicar ACLs a interfícies
-interface GigabitEthernet0/0
- ip access-group INTERNET_IN in
-
-interface GigabitEthernet0/1
- ip access-group DMZ_TO_INTRANET out
-
-! SSH Configuration
-ip domain-name g5.local
-crypto key generate rsa modulus 2048
-line vty 0 4
- login local
- transport input ssh
- exec-timeout 10 0
-
-! Logs i debugging
-logging buffered 16384
-logging console warnings
-service timestamps log datetime msec
-
-! Guardar configuració
-copy running-config startup-config
+# Guardar regles iptables
+iptables-save > /etc/iptables/rules.v4
 ```
 
 ---
