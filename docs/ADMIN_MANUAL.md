@@ -141,23 +141,14 @@ subnet 192.168.5.128 netmask 255.255.255.192 {
 }
 
 # Reserves estàtiques per clients
-host client-linux {
+host CLILIN {
   hardware ethernet 52:54:00:39:be:b1;
   fixed-address 192.168.5.131;
 }
 
-host client-windows {
+host CLIWIN {
   hardware ethernet 52:54:00:1E:47:7A;
   fixed-address 192.168.5.130;
-}
-
-# Declaracions de xarxes (no assigna IPs però reconeix les xarxes)
-subnet 192.168.5.0 netmask 255.255.255.192 {
-  # DMZ - només declaració
-}
-
-subnet 192.168.5.64 netmask 255.255.255.192 {
-  # Intranet - només declaració
 }
 ```
 
@@ -738,7 +729,6 @@ Tots els fitxers de configuració i scripts es troben a la carpeta `/files` del 
 ---
 
 **Última actualització:** 2025-11-11  
-**Administrador del sistema:** Alberto Trujillo ITB2425  
 **Versió del manual:** 2.1  
 
 ---
