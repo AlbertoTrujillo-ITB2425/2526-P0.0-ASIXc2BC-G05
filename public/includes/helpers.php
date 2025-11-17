@@ -1,48 +1,73 @@
 <?php
-// helpers.php - funcions utilitàries per l'aplicació
+// includes/helpers.php - Versión Blindada contra errores de permisos
 
 /**
- * Retorna llistat de taules de la BD
- * @param mysqli $conn
- * @return array
+ * Escapa text per a sortida HTML segura (XSS Protection)
  */
-function get_tables($conn) {
+function h(?string $s): string {
+    return htmlspecialchars($s ?? '', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+}
+
+/**
+ * Retorna llistat de totes les taules de la base de dades
+ */
+function get_tables(mysqli $conn): array {
     $tables = [];
-    $res = $conn->query("SHOW TABLES");
-    if ($res) {
-        while ($r = $res->fetch_array(MYSQLI_NUM)) {
-            $tables[] = $r[0];
+    try {
+        $res = $conn->query("SHOW TABLES");
+        if ($res) {
+            while ($r = $res->fetch_array(MYSQLI_NUM)) {
+                $tables[] = $r[0];
+            }
+            $res->free();
         }
-        $res->free();
+    } catch (Exception $e) {
+        return [];
     }
     return $tables;
 }
 
 /**
- * Retorna metadades de columnes per una taula (SHOW COLUMNS)
- * @param mysqli $conn
- * @param string $table
- * @return array
+ * Compta el número de files d'una taula de forma ràpida
  */
-function get_columns($conn, $table) {
+function table_count(mysqli $conn, string $table): int {
+    try {
+        $safe_table = $conn->real_escape_string($table);
+        $res = $conn->query("SELECT COUNT(*) as c FROM `{$safe_table}`");
+        if ($res) {
+            $row = $res->fetch_assoc();
+            return (int)$row['c'];
+        }
+    } catch (Exception $e) {
+        return 0;
+    }
+    return 0;
+}
+
+/**
+ * Obté metadades de les columnes (Camp, Tipus, Clau, etc.)
+ */
+function get_columns(mysqli $conn, string $table): array {
     $cols = [];
     $safe = $conn->real_escape_string($table);
-    $res = $conn->query("SHOW COLUMNS FROM `{$safe}`");
-    if ($res) {
-        while ($c = $res->fetch_assoc()) {
-            $cols[] = $c; // Field, Type, Null, Key, Default, Extra
+    try {
+        $res = $conn->query("SHOW COLUMNS FROM `{$safe}`");
+        if ($res) {
+            while ($c = $res->fetch_assoc()) {
+                $cols[] = $c; 
+            }
+            $res->free();
         }
-        $res->free();
+    } catch (Exception $e) {
+        return [];
     }
     return $cols;
 }
 
 /**
- * Troba la/les columnes que són PRIMARY KEY. Retorna array de noms (pot ser compost)
- * @param array $columns (resultat de get_columns)
- * @return array
+ * Detecta quines columnes formen la Clau Primària (PK)
  */
-function get_primary_keys_from_columns($columns) {
+function get_primary_keys_from_columns(array $columns): array {
     $pks = [];
     foreach ($columns as $c) {
         if (isset($c['Key']) && strtoupper($c['Key']) === 'PRI') {
@@ -53,41 +78,73 @@ function get_primary_keys_from_columns($columns) {
 }
 
 /**
- * Inferir tipus de params per bind (s|i|d|b). Simplificat: int -> i, else -> s
- * @param string $colType (ex: int(11), varchar(100))
- * @return string
+ * Tradueix tipus SQL (int, varchar) a caràcters de bind_param
  */
-function coltype_to_bindchar($colType) {
+function coltype_to_bindchar(string $colType): string {
     $t = strtolower($colType);
-    if (strpos($t, 'int') !== false || strpos($t, 'tinyint') !== false || strpos($t, 'smallint') !== false || strpos($t, 'mediumint') !== false || strpos($t, 'bigint') !== false) {
-        return 'i';
-    }
-    if (strpos($t, 'decimal') !== false || strpos($t, 'float') !== false || strpos($t, 'double') !== false) {
-        return 'd';
-    }
-    return 's';
+    if (preg_match('/int|year/i', $t)) return 'i';
+    if (preg_match('/float|double|decimal/i', $t)) return 'd';
+    return 's'; 
 }
 
 /**
- * Helper per fer bind dinàmic en mysqli (usa referències)
- * @param mysqli_stmt $stmt
- * @param string $types
- * @param array $params
- * @return bool
+ * Màgia per fer bind_param dinàmic
  */
-function bind_params_dynamic($stmt, $types, $params) {
-    // mysqli_stmt::bind_param requereix referències
-    $refs = [];
-    foreach ($params as $key => $value) {
-        $refs[$key] = &$params[$key];
+function bind_params_dynamic(mysqli_stmt $stmt, string $types, array $params): bool {
+    if (empty($params)) return true;
+    
+    $bind_names[] = $types;
+    for ($i = 0; $i < count($params); $i++) {
+        $bind_name = 'bind' . $i;
+        $$bind_name = $params[$i];
+        $bind_names[] = &$$bind_name;
     }
-    array_unshift($refs, $types);
-    return call_user_func_array(array($stmt, 'bind_param'), $refs);
+    
+    return call_user_func_array([$stmt, 'bind_param'], $bind_names);
 }
 
 /**
- * Escape per mostrar text en HTML
+ * Comprova si una taula té columna 'created_by' i si no, intenta crear-la.
+ * ARA AMB PROTECCIÓ TRY-CATCH
  */
-function h($s) {
-    return htmlspecialchars($s ?? '', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+function ensure_ownership_column(mysqli $conn, string $table) {
+    $safe = $conn->real_escape_string($table);
+    
+    // Obtenim columnes actuals
+    $cols = get_columns($conn, $table);
+    $has_col = false;
+    foreach($cols as $c) {
+        if($c['Field'] === 'created_by') $has_col = true;
+    }
+    
+    if (!$has_col) {
+        try {
+            // Intentem modificar la taula
+            $conn->query("ALTER TABLE `$safe` ADD COLUMN `created_by` INT NULL DEFAULT NULL, ADD INDEX (`created_by`)");
+            return true;
+        } catch (mysqli_sql_exception $e) {
+            // Si falla per permisos (Error 1142) o un altre motiu, ho capturem.
+            // Retornem false per indicar que no tenim control de propietat.
+            error_log("No s'ha pogut afegir columna created_by a $table: " . $e->getMessage());
+            return false;
+        }
+    }
+    return true;
 }
+
+/**
+ * Construeix clàusula WHERE per cerca global
+ */
+function build_search_where(mysqli $conn, array $columns, string $search_term): string {
+    if (trim($search_term) === '') return '';
+    
+    $safe_term = $conn->real_escape_string($search_term);
+    $parts = [];
+    foreach ($columns as $c) {
+        $parts[] = "`" . $c['Field'] . "` LIKE '%$safe_term%'";
+    }
+    
+    if (empty($parts)) return '';
+    return "(" . implode(' OR ', $parts) . ")";
+}
+?>

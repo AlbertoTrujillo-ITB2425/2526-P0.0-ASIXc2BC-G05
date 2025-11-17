@@ -1,448 +1,400 @@
 <?php
-// table.php - visualització i CRUD genèric per a una taula
-require 'includes/config.php';
-require 'includes/helpers.php';
+// table.php - Versión Final Robusta (Compatible con cualquier permiso de BD)
 
-session_start();
+// 1. CONFIGURACIÓ I SEGURETAT
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 
-// Generar token CSRF senzill
-if (empty($_SESSION['csrf_token'])) {
-    $_SESSION['csrf_token'] = bin2hex(random_bytes(16));
-}
-$csrf_token = $_SESSION['csrf_token'];
+require_once __DIR__ . '/includes/config.php';
+require_once __DIR__ . '/includes/helpers.php';
+require_once __DIR__ . '/includes/auth.php';
 
+// Bloquejar accés si no està loguejat
+require_login();
+
+$current_user_id = current_user_id();
+$is_admin = is_admin(); // Recorda: isard i pirineus són admins a auth.php
+
+// 2. VALIDAR TAULA
 $tables = get_tables($conn);
-$table = isset($_GET['table']) ? $_GET['table'] : null;
+$table = $_GET['table'] ?? null;
+
 if (!$table || !in_array($table, $tables, true)) {
-    die("Taula invàlida o no seleccionada.");
+    header("Location: index.php");
+    exit;
 }
 
-// obtenir metadades
+// Intentar crear columna (silenciós si falla per permisos)
+ensure_ownership_column($conn, $table);
+
+// Obtenir estructura REAL actual de la taula
 $columns = get_columns($conn, $table);
-if (empty($columns)) {
-    die("No s'han pogut obtenir columnes per la taula " . h($table));
-}
 $pk_cols = get_primary_keys_from_columns($columns);
+$safe_table = $conn->real_escape_string($table);
 
-// Simple map per traduir noms de camp a català (afegir més segons calgui)
-function field_label(string $f): string {
-    static $map = [
-        'register_id' => 'ID',
-        'id' => 'ID',
-        'name' => 'Nom',
-        'institution_id' => 'ID Centre',
-        'institution_name' => 'Centre',
-        'created' => 'Creat',
-        'modified' => 'Modificat',
-        'addresses_road_name' => 'Carrer',
-        'addresses_town' => 'Municipi',
-        'addresses_zip_code' => 'Codi postal',
-        'addresses_district_name' => 'Districte',
-        'address' => 'Adreça',
-        'geo_epgs_4326_lat' => 'Latitud',
-        'geo_epgs_4326_lon' => 'Longitud',
-        'values_attribute_name' => 'Atribut',
-        'values_value' => 'Valor',
-        'secondary_filters_name' => 'Categoria',
-        'values_description' => 'Descripció',
-        'timetable' => 'Horari',
-        'start_date' => "Data d'inici",
-        'end_date' => "Data de fi"
-    ];
-    return $map[$f] ?? ucfirst(str_replace(['_', '-'], [' ', ' '], $f));
+// DETECTOR INTEL·LIGENT: ¿Existeix realment la columna created_by?
+// Això evita l'error "Unknown column" si no tenim permisos per crear-la.
+$has_owner_col = false;
+foreach ($columns as $c) {
+    if ($c['Field'] === 'created_by') $has_owner_col = true;
 }
 
-// Helper: decideix si el tipus és data
-function is_date_type(string $type): bool {
-    $t = strtolower($type);
-    return str_contains($t, 'date') || str_contains($t, 'timestamp');
-}
-
-// processar accions POST: insert / update / delete
+// 3. GESTIÓ DE PETICIONS (POST)
 $message = '';
-$errors = [];
-$preserve = []; // per preservar valors al formulari d'insert
+$msg_type = ''; 
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // CSRF check (només si hi ha token)
-    $posted_csrf = $_POST['csrf_token'] ?? '';
-    if (!hash_equals($_SESSION['csrf_token'], $posted_csrf)) {
-        $message = "Token de seguretat invàlid. Torna-ho a intentar.";
-    } else {
-        $action = $_POST['action'] ?? '';
+    if (empty($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die("Error de seguretat: Token invàlid.");
+    }
+
+    $action = $_POST['action'] ?? '';
+
+    try {
+        // --- INSERT ---
         if ($action === 'insert') {
-            // preparar insert: excloure columnes AUTO_INCREMENT amb Extra posant 'auto_increment'
-            $insert_cols = [];
-            $insert_types = '';
-            $insert_values = [];
+            $cols = []; $vals = []; $types = '';
+            
+            // NOMÉS intentem guardar el propietari si la columna existeix
+            if ($has_owner_col) {
+                $cols[] = 'created_by'; 
+                $vals[] = $current_user_id; 
+                $types = 'i';
+            }
+
             foreach ($columns as $c) {
-                if (strpos($c['Extra'], 'auto_increment') !== false) continue;
                 $field = $c['Field'];
-                // conservar per a repintat del formulari en cas d'error
-                $preserve[$field] = $_POST[$field] ?? '';
+                // Ignorem camps auto_increment i created_by (ja gestionat)
+                if (strpos($c['Extra'], 'auto_increment') !== false || $field === 'created_by') continue;
+                
                 if (isset($_POST[$field])) {
-                    $insert_cols[] = "`{$field}`";
-                    $insert_types .= coltype_to_bindchar($c['Type']);
-                    $insert_values[] = $_POST[$field] === '' ? null : $_POST[$field];
+                    $cols[] = "`$field`";
+                    $vals[] = $_POST[$field] === '' ? null : $_POST[$field];
+                    $types .= coltype_to_bindchar($c['Type']);
                 }
             }
-            if (!empty($insert_cols)) {
-                $placeholders = implode(',', array_fill(0, count($insert_cols), '?'));
-                $safe_table = $conn->real_escape_string($table);
-                $sql = "INSERT INTO `{$safe_table}` (" . implode(',', $insert_cols) . ") VALUES ({$placeholders})";
+            
+            // Si no hi ha columnes per inserir (tots nulls), evitar error SQL
+            if (empty($cols) && empty($vals)) {
+                 $sql = "INSERT INTO `$safe_table` () VALUES ()"; // Insert buit
+            } else {
+                 $sql = "INSERT INTO `$safe_table` (" . implode(',', $cols) . ") VALUES (" . implode(',', array_fill(0, count($cols), '?')) . ")";
+            }
+
+            $stmt = $conn->prepare($sql);
+            if(!$stmt) throw new Exception("Error SQL: " . $conn->error);
+            
+            if (!empty($vals)) {
+                bind_params_dynamic($stmt, $types, $vals);
+            }
+            
+            if ($stmt->execute()) {
+                $message = "Registre creat correctament.";
+                $msg_type = 'success';
+            } else throw new Exception($stmt->error);
+
+        // --- UPDATE / DELETE ---
+        } elseif ($action === 'update' || $action === 'delete') {
+            
+            // A. Identificar fila amb PKs
+            $where_parts = []; $pk_vals = []; $pk_types = '';
+            foreach ($pk_cols as $pk) {
+                if (!isset($_POST['pk_' . $pk])) throw new Exception("Falta PK: $pk");
+                $where_parts[] = "`$pk` = ?";
+                $pk_vals[] = $_POST['pk_' . $pk];
+                foreach($columns as $c) if($c['Field'] === $pk) $pk_types .= coltype_to_bindchar($c['Type']);
+            }
+
+            // B. Verificar Propietat (NOMÉS SI LA COLUMNA EXISTEIX)
+            if ($has_owner_col && !$is_admin) {
+                $check_sql = "SELECT created_by FROM `$safe_table` WHERE " . implode(' AND ', $where_parts);
+                $check_stmt = $conn->prepare($check_sql);
+                bind_params_dynamic($check_stmt, $pk_types, $pk_vals);
+                $check_stmt->execute();
+                $owner_res = $check_stmt->get_result()->fetch_assoc();
+                
+                if (!$owner_res) throw new Exception("Registre no trobat.");
+                
+                // Si té amo i no ets tu, error
+                if ($owner_res['created_by'] !== null && $owner_res['created_by'] != $current_user_id) {
+                     throw new Exception("⛔ No tens permís per modificar aquest registre.");
+                }
+            }
+            
+            // C. Executar Acció
+            if ($action === 'delete') {
+                $sql = "DELETE FROM `$safe_table` WHERE " . implode(' AND ', $where_parts);
                 $stmt = $conn->prepare($sql);
-                if ($stmt) {
-                    if ($insert_types === '') $insert_types = str_repeat('s', count($insert_values));
-                    bind_params_dynamic($stmt, $insert_types, $insert_values);
-                    if ($stmt->execute()) {
-                        $message = "Registre insertat correctament.";
-                        $preserve = []; // esborrar valors preservats
-                    } else {
-                        $message = "Error insertant: " . h($stmt->error);
-                    }
-                    $stmt->close();
-                } else {
-                    $message = "Error preparing INSERT: " . h($conn->error);
-                }
-            } else {
-                $message = "No hi ha columnes per inserir.";
-            }
-        } elseif ($action === 'update') {
-            // necessita PKs
-            if (empty($pk_cols)) {
-                $message = "No es pot actualitzar: la taula no té clau primària definida.";
-            } else {
-                $set_parts = [];
-                $set_types = '';
-                $set_values = [];
+                bind_params_dynamic($stmt, $pk_types, $pk_vals);
+                if ($stmt->execute()) {
+                    $message = "Registre eliminat.";
+                    $msg_type = 'success';
+                } else throw new Exception($stmt->error);
+
+            } elseif ($action === 'update') {
+                $set_parts = []; $set_vals = []; $set_types = '';
                 foreach ($columns as $c) {
                     $f = $c['Field'];
-                    if (in_array($f, $pk_cols, true)) continue; // no posar PK a SET
+                    if (in_array($f, $pk_cols) || $f === 'created_by') continue;
                     if (isset($_POST[$f])) {
-                        $set_parts[] = "`{$f}` = ?";
+                        $set_parts[] = "`$f` = ?";
+                        $set_vals[] = $_POST[$f] === '' ? null : $_POST[$f];
                         $set_types .= coltype_to_bindchar($c['Type']);
-                        $set_values[] = $_POST[$f] === '' ? null : $_POST[$f];
                     }
                 }
-                // bind per PKs
-                $where_parts = [];
-                $where_types = '';
-                $where_values = [];
-                foreach ($pk_cols as $pk) {
-                    if (!isset($_POST['pk_' . $pk])) {
-                        $message = "Falta valor de la clau primària {$pk}.";
-                        break;
-                    }
-                    $where_parts[] = "`{$pk}` = ?";
-                    // trobar tipus del pk
-                    foreach ($columns as $c) {
-                        if ($c['Field'] === $pk) {
-                            $where_types .= coltype_to_bindchar($c['Type']);
-                            break;
-                        }
-                    }
-                    $where_values[] = $_POST['pk_' . $pk];
-                }
-                if ($message === '') {
-                    if (empty($set_parts)) {
-                        $message = "No hi ha camps per actualitzar.";
-                    } else {
-                        $safe_table = $conn->real_escape_string($table);
-                        $sql = "UPDATE `{$safe_table}` SET " . implode(',', $set_parts) . " WHERE " . implode(' AND ', $where_parts) . " LIMIT 1";
-                        $stmt = $conn->prepare($sql);
-                        if ($stmt) {
-                            $types = $set_types . $where_types;
-                            $params = array_merge($set_values, $where_values);
-                            bind_params_dynamic($stmt, $types, $params);
-                            if ($stmt->execute()) {
-                                $message = "Registre actualitzat.";
-                            } else {
-                                $message = "Error actualitzant: " . h($stmt->error);
-                            }
-                            $stmt->close();
-                        } else {
-                            $message = "Error preparing UPDATE: " . h($conn->error);
-                        }
-                    }
-                }
-            }
-        } elseif ($action === 'delete') {
-            if (empty($pk_cols)) {
-                $message = "No es pot eliminar: la taula no té clau primària definida.";
-            } else {
-                $where_parts = [];
-                $where_types = '';
-                $where_values = [];
-                foreach ($pk_cols as $pk) {
-                    if (!isset($_POST['pk_' . $pk])) {
-                        $message = "Falta valor de la clau primària {$pk}.";
-                        break;
-                    }
-                    $where_parts[] = "`{$pk}` = ?";
-                    foreach ($columns as $c) {
-                        if ($c['Field'] === $pk) {
-                            $where_types .= coltype_to_bindchar($c['Type']);
-                            break;
-                        }
-                    }
-                    $where_values[] = $_POST['pk_' . $pk];
-                }
-                if ($message === '') {
-                    $safe_table = $conn->real_escape_string($table);
-                    $sql = "DELETE FROM `{$safe_table}` WHERE " . implode(' AND ', $where_parts) . " LIMIT 1";
+                if ($set_parts) {
+                    $sql = "UPDATE `$safe_table` SET " . implode(',', $set_parts) . " WHERE " . implode(' AND ', $where_parts);
                     $stmt = $conn->prepare($sql);
-                    if ($stmt) {
-                        bind_params_dynamic($stmt, $where_types, $where_values);
-                        if ($stmt->execute()) {
-                            $message = "Registre eliminat.";
-                        } else {
-                            $message = "Error eliminant: " . h($stmt->error);
-                        }
-                        $stmt->close();
-                    } else {
-                        $message = "Error preparing DELETE: " . h($conn->error);
-                    }
+                    $all_vals = array_merge($set_vals, $pk_vals);
+                    $all_types = $set_types . $pk_types;
+                    bind_params_dynamic($stmt, $all_types, $all_vals);
+                    if ($stmt->execute()) {
+                        $message = "Actualitzat correctament. Tornant...";
+                        $msg_type = 'success';
+                        echo "<script>setTimeout(() => window.location.href='?table=".urlencode($table)."', 1000);</script>";
+                    } else throw new Exception($stmt->error);
                 }
             }
         }
+    } catch (Exception $e) {
+        $message = $e->getMessage();
+        $msg_type = 'error';
     }
 }
 
-// obtenir dades per llistat (limit)
-$limit = 200;
-$safe_table = $conn->real_escape_string($table);
-$data = [];
-$res = $conn->query("SELECT * FROM `{$safe_table}` LIMIT {$limit}");
-if ($res) {
-    while ($r = $res->fetch_assoc()) $data[] = $r;
-    $res->free();
-} else {
-    $message = "Error consultant la taula: " . h($conn->error);
+// 4. MODE DE VISTA: ¿EDITAR O LLISTAR?
+$view_mode = 'list';
+$edit_data = null;
+
+if (isset($_GET['edit'])) {
+    try {
+        $edit_pk_vals = json_decode(rawurldecode($_GET['edit']), true);
+        if (!$edit_pk_vals) throw new Exception("ID invàlid.");
+
+        $where_parts = []; $vals = []; $types = '';
+        foreach ($pk_cols as $pk) {
+            $where_parts[] = "`$pk` = ?";
+            $vals[] = $edit_pk_vals[$pk];
+            foreach($columns as $col) if($col['Field'] === $pk) $types .= coltype_to_bindchar($col['Type']);
+        }
+        
+        $stmt = $conn->prepare("SELECT * FROM `$safe_table` WHERE " . implode(' AND ', $where_parts));
+        bind_params_dynamic($stmt, $types, $vals);
+        $stmt->execute();
+        $edit_data = $stmt->get_result()->fetch_assoc();
+        
+        if ($edit_data) {
+            if ($has_owner_col && !$is_admin && $edit_data['created_by'] !== null && $edit_data['created_by'] != $current_user_id) {
+                $message = "No pots editar aquest registre perquè no és teu.";
+                $msg_type = 'error';
+                $view_mode = 'list';
+            } else {
+                $view_mode = 'edit';
+            }
+        } else {
+            $message = "Registre no trobat.";
+        }
+
+    } catch (Exception $e) { $message = "Error: ".$e->getMessage(); }
 }
 
-// util per seleccionar valor previst (preserve post)
-function pv($field, $row = null) {
-    global $preserve;
-    if (isset($preserve[$field])) return h($preserve[$field]);
-    if ($row !== null && array_key_exists($field, $row)) return h($row[$field]);
-    return '';
+
+// 5. CONSULTA DE LLISTAT
+$data = [];
+$total_records = 0; $total_pages = 0;
+$search_query = $_GET['q'] ?? '';
+$page = max(1, intval($_GET['page'] ?? 1));
+
+if ($view_mode === 'list') {
+    $per_page = 50;
+    $offset = ($page - 1) * $per_page;
+    $where_clauses = [];
+    
+    if ($search_query) {
+        $search_sql = build_search_where($conn, $columns, $search_query);
+        if ($search_sql) $where_clauses[] = $search_sql;
+    }
+    $sql_where = empty($where_clauses) ? '' : "WHERE " . implode(' AND ', $where_clauses);
+
+    try {
+        $count_res = $conn->query("SELECT COUNT(*) as c FROM `$safe_table` $sql_where");
+        $total_records = $count_res ? $count_res->fetch_assoc()['c'] : 0;
+    } catch(Exception $e) { $total_records = 0; }
+    
+    $total_pages = ceil($total_records / $per_page);
+
+    $sql = "SELECT * FROM `$safe_table` $sql_where ORDER BY 1 DESC LIMIT $per_page OFFSET $offset";
+    try {
+        $res = $conn->query($sql);
+        if ($res) while ($row = $res->fetch_assoc()) $data[] = $row;
+    } catch (Exception $e) { $message = "Error carregant dades: " . $e->getMessage(); }
 }
+
+if (empty($_SESSION['csrf_token'])) $_SESSION['csrf_token'] = bin2hex(random_bytes(16));
 ?>
 <!doctype html>
 <html lang="ca">
 <head>
   <meta charset="utf-8">
-  <title>Taula <?php echo h($table); ?> - CRUD</title>
+  <title>Taula: <?php echo htmlspecialchars($table); ?></title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <!-- Tailwind Play CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-50 text-slate-800">
-  <div class="max-w-7xl mx-auto p-6">
-    <a class="text-slate-600 hover:text-slate-900" href="index.php">&larr; Tornar</a>
-    <h2 class="text-2xl font-semibold mt-4 mb-4">Taula: <span class="font-mono text-slate-700"><?php echo h($table); ?></span></h2>
+<body class="bg-gray-100 text-gray-800 font-sans min-h-screen pb-10">
 
+  <nav class="bg-white shadow border-b px-6 py-3 sticky top-0 z-20 flex flex-wrap justify-between items-center gap-4">
+    <div class="flex items-center gap-4">
+        <a href="index.php" class="text-gray-500 hover:text-blue-600 transition flex items-center gap-1">
+            &larr; Enrere
+        </a>
+        <h1 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+            <span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-sm font-mono"><?php echo htmlspecialchars($table); ?></span>
+        </h1>
+    </div>
+    
+    <?php if ($view_mode === 'list'): ?>
+    <form method="GET" class="flex-grow max-w-xl relative">
+        <input type="hidden" name="table" value="<?php echo htmlspecialchars($table); ?>">
+        <input type="text" name="q" value="<?php echo htmlspecialchars($search_query); ?>" placeholder="Cercar..." class="w-full pl-10 pr-4 py-2 border rounded-full shadow-sm outline-none focus:ring-2 focus:ring-blue-500">
+    </form>
+    <?php endif; ?>
+  </nav>
+
+  <main class="max-w-[95%] mx-auto mt-6">
     <?php if ($message): ?>
-      <div class="mb-4 p-3 rounded border bg-white text-slate-800"><?php echo h($message); ?></div>
+        <div class="mb-6 p-4 rounded border-l-4 shadow-sm <?php echo $msg_type === 'success' ? 'bg-green-50 border-green-500 text-green-800' : 'bg-red-50 border-red-500 text-red-800'; ?>">
+            <?php echo htmlspecialchars($message); ?>
+        </div>
     <?php endif; ?>
 
-    <!-- Nova secció: Afegir registre amb acordió i millor estil -->
-    <div class="mb-6">
-      <div class="bg-white p-4 rounded shadow-sm">
-        <div class="flex items-center justify-between mb-3">
-          <strong class="text-lg">Afegir nou registre</strong>
-          <div class="text-sm text-slate-500"><?php echo count($columns); ?> camps</div>
+    <?php if ($view_mode === 'edit' && $edit_data): ?>
+        <div class="bg-white rounded-lg shadow-lg max-w-4xl mx-auto overflow-hidden">
+            <div class="bg-blue-600 px-6 py-4 flex justify-between items-center">
+                <h2 class="text-white font-bold text-lg">✏️ Editant Registre</h2>
+                <a href="?table=<?php echo urlencode($table); ?>" class="text-blue-100 hover:text-white text-sm">Cancel·lar</a>
+            </div>
+            <form method="post" class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <input type="hidden" name="action" value="update">
+                <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+                
+                <?php foreach ($pk_cols as $pk): ?>
+                    <input type="hidden" name="pk_<?php echo $pk; ?>" value="<?php echo htmlspecialchars($edit_data[$pk]); ?>">
+                <?php endforeach; ?>
+
+                <?php foreach ($columns as $c): 
+                    $f = $c['Field'];
+                    if (in_array($f, $pk_cols) || $f === 'created_by') continue;
+                    $val = $edit_data[$f];
+                ?>
+                    <div class="flex flex-col">
+                        <label class="text-sm font-semibold text-gray-600 mb-1"><?php echo $f; ?></label>
+                        <?php if (strpos($c['Type'], 'text') !== false): ?>
+                            <textarea name="<?php echo $f; ?>" rows="4" class="border rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none"><?php echo htmlspecialchars($val ?? ''); ?></textarea>
+                        <?php else: ?>
+                            <input type="text" name="<?php echo $f; ?>" value="<?php echo htmlspecialchars($val ?? ''); ?>" class="border rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                        <?php endif; ?>
+                    </div>
+                <?php endforeach; ?>
+
+                <div class="md:col-span-2 border-t pt-4 flex justify-end gap-3">
+                    <a href="?table=<?php echo urlencode($table); ?>" class="px-4 py-2 border rounded text-gray-600 hover:bg-gray-50">Cancel·lar</a>
+                    <button type="submit" class="px-6 py-2 bg-blue-600 text-white font-bold rounded hover:bg-blue-700 shadow">Guardar Canvis</button>
+                </div>
+            </form>
         </div>
 
-        <details class="group" open>
-          <summary class="cursor-pointer flex items-center justify-between p-3 rounded bg-slate-50 hover:bg-slate-100">
-            <span class="text-sm text-slate-700">Obrir formulari d'inserció</span>
-            <svg class="w-4 h-4 text-slate-500 group-open:rotate-180 transition-transform" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-          </summary>
-
-          <form method="post" class="space-y-4 p-4" autocomplete="off" novalidate>
-            <input type="hidden" name="action" value="insert">
-            <input type="hidden" name="csrf_token" value="<?php echo h($csrf_token); ?>">
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <?php foreach ($columns as $c): ?>
-                <?php
-                  // no mostrar camps auto_increment en el formulari d'inserció
-                  if (strpos($c['Extra'], 'auto_increment') !== false) continue;
-                  $field = $c['Field'];
-                  $type = $c['Type'];
-                  $value = pv($field);
-                ?>
-                <div>
-                  <label for="f_<?php echo h($field); ?>" class="block text-sm font-medium text-slate-700 mb-1">
-                    <?php echo h(field_label($field)); ?>
-                    <?php if ($c['Null'] === 'NO' && $c['Default'] === null): ?>
-                      <span class="text-rose-600" title="Camp obligatori">*</span>
-                    <?php endif; ?>
-                  </label>
-
-                  <?php if (is_date_type($type)): ?>
-                    <input id="f_<?php echo h($field); ?>" type="date" name="<?php echo h($field); ?>" value="<?php echo $value; ?>" class="w-full border rounded p-2 text-sm">
-                  <?php elseif (stripos($type, 'text') !== false || stripos($type, 'blob') !== false): ?>
-                    <textarea id="f_<?php echo h($field); ?>" name="<?php echo h($field); ?>" rows="3" class="w-full border rounded p-2 text-sm"><?php echo $value; ?></textarea>
-                  <?php else: ?>
-                    <input id="f_<?php echo h($field); ?>" type="text" name="<?php echo h($field); ?>" value="<?php echo $value; ?>" maxlength="255" class="w-full border rounded p-2 text-sm" >
-                  <?php endif; ?>
-                  <?php if (!empty($c['Comment'])): ?>
-                    <div class="text-xs text-slate-400 mt-1"><?php echo h($c['Comment']); ?></div>
-                  <?php endif; ?>
-                </div>
-              <?php endforeach; ?>
-            </div>
-
-            <div class="flex items-center gap-3">
-              <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                Insertar
-              </button>
-              <a href="import.php?table=<?php echo urlencode($table); ?>" class="ml-3 text-sm text-slate-600 hover:underline">Importar CSV/JSON a aquesta taula</a>
-              <?php if (!empty($preserve)): ?>
-                <span class="ml-auto text-sm text-amber-600">S'ha preservat l'entrada després d'un error.</span>
-              <?php endif; ?>
-            </div>
-          </form>
-        </details>
-      </div>
-    </div>
-
-    <h3 class="text-lg font-medium mb-2">Registres (màx <?php echo $limit; ?>)</h3>
-
-    <div class="overflow-x-auto bg-white rounded shadow">
-      <table class="min-w-full divide-y divide-slate-200">
-        <thead class="bg-slate-50">
-          <tr>
-            <?php foreach ($columns as $c): ?>
-              <th class="px-3 py-2 text-left text-sm font-medium text-slate-600 border-b"><?php echo h(field_label($c['Field'])); ?></th>
-            <?php endforeach; ?>
-            <th class="px-3 py-2 text-left text-sm font-medium text-slate-600 border-b">Accions</th>
-          </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-slate-100">
-          <?php if (empty($data)): ?>
-            <tr><td class="p-4" colspan="<?php echo count($columns)+1; ?>">No hi ha dades a la taula.</td></tr>
-          <?php else: ?>
-            <?php foreach ($data as $row): ?>
-              <tr>
-                <?php foreach ($columns as $c): $f = $c['Field']; ?>
-                  <td class="px-3 py-2 align-top text-sm text-slate-700"><?php echo nl2br(h($row[$f] ?? '')); ?></td>
-                <?php endforeach; ?>
-                <td class="px-3 py-2 align-top text-sm">
-                  <?php if (!empty($pk_cols)): ?>
-                    <?php
-                      // construir parametres PK de forma segura per GET edit
-                      $pkvals = array_intersect_key($row, array_flip($pk_cols));
-                      $edit_param = rawurlencode(json_encode($pkvals, JSON_UNESCAPED_UNICODE));
-                    ?>
-                    <a class="text-blue-600 hover:underline mr-3" href="?table=<?php echo urlencode($table); ?>&edit=<?php echo $edit_param; ?>">Editar</a>
-                    <form method="post" class="inline" onsubmit="return confirm('Eliminar registre?');">
-                      <?php foreach ($pk_cols as $pk): ?>
-                        <input type="hidden" name="pk_<?php echo h($pk); ?>" value="<?php echo h($row[$pk]); ?>">
-                      <?php endforeach; ?>
-                      <input type="hidden" name="action" value="delete">
-                      <input type="hidden" name="csrf_token" value="<?php echo h($csrf_token); ?>">
-                      <button type="submit" class="text-red-600 hover:underline">Eliminar</button>
-                    </form>
-                  <?php else: ?>
-                    <span class="text-amber-600">No editable (no PK)</span>
-                  <?php endif; ?>
-                </td>
-              </tr>
-            <?php endforeach; ?>
-          <?php endif; ?>
-        </tbody>
-      </table>
-    </div>
-
-    <?php
-    // Si s'ha demanat editar un registre via GET edit=JSON(pk=>val)
-    if (isset($_GET['edit']) && !empty($pk_cols)) {
-        $edit_raw = rawurldecode($_GET['edit']);
-        $edit_pk_vals = json_decode($edit_raw, true);
-        if (is_array($edit_pk_vals)) {
-            // obtenir fila actual
-            $where_parts = [];
-            $types = '';
-            $values = [];
-            foreach ($pk_cols as $pk) {
-                if (!isset($edit_pk_vals[$pk])) {
-                    echo "<p class='text-red-600 mt-4'>Falta PK {$pk} per a l'edició.</p>";
-                    $edit_pk_vals = null;
-                    break;
-                }
-                $where_parts[] = "`{$pk}` = ?";
-                // troba tipus
-                foreach ($columns as $c) {
-                    if ($c['Field'] === $pk) {
-                        $types .= coltype_to_bindchar($c['Type']);
-                        break;
-                    }
-                }
-                $values[] = $edit_pk_vals[$pk];
-            }
-            if ($edit_pk_vals) {
-                $safe_table = $conn->real_escape_string($table);
-                $sql = "SELECT * FROM `{$safe_table}` WHERE " . implode(' AND ', $where_parts) . " LIMIT 1";
-                $stmt = $conn->prepare($sql);
-                if ($stmt) {
-                    bind_params_dynamic($stmt, $types, $values);
-                    $stmt->execute();
-                    $res = $stmt->get_result();
-                    $rowdata = $res->fetch_assoc();
-                    $stmt->close();
-                    if ($rowdata) {
-                        // renderitzar formulari d'edició
+    <?php else: ?>
+        
+        <div class="bg-white rounded shadow-sm border border-gray-200 mb-6">
+            <details class="group">
+                <summary class="flex justify-between p-4 bg-gray-50 cursor-pointer hover:bg-gray-100 select-none">
+                    <span class="font-bold text-green-700 flex items-center gap-2">➕ Afegir Nou Registre</span>
+                    <span class="text-gray-400 group-open:rotate-180 transition-transform">▼</span>
+                </summary>
+                <div class="p-6 border-t bg-white">
+                    <form method="post" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <input type="hidden" name="action" value="insert">
+                        <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+                        <?php foreach ($columns as $c): 
+                            if ($c['Extra'] === 'auto_increment' || $c['Field'] === 'created_by') continue;
                         ?>
-                        <div class="mt-6 bg-white p-4 rounded shadow">
-                          <h3 class="text-lg font-medium mb-3">Editar registre</h3>
-                          <form method="post" class="space-y-3">
-                            <input type="hidden" name="action" value="update">
-                            <input type="hidden" name="csrf_token" value="<?php echo h($csrf_token); ?>">
-
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                              <?php foreach ($columns as $c):
-                                  $f = $c['Field'];
-                                  $val = $rowdata[$f] ?? '';
-                              ?>
-                                <div>
-                                  <label class="block text-sm font-medium text-slate-700 mb-1"><?php echo h(field_label($f)); ?></label>
-                                  <?php if (is_date_type($c['Type'])): ?>
-                                    <input type="date" name="<?php echo h($f); ?>" value="<?php echo h($val); ?>" class="w-full border rounded p-2 text-sm">
-                                  <?php elseif (stripos($c['Type'], 'text') !== false): ?>
-                                    <textarea name="<?php echo h($f); ?>" class="w-full border rounded p-2 text-sm"><?php echo h($val); ?></textarea>
-                                  <?php else: ?>
-                                    <input type="text" name="<?php echo h($f); ?>" value="<?php echo h($val); ?>" class="w-full border rounded p-2 text-sm">
-                                  <?php endif; ?>
-                                </div>
-                              <?php endforeach; ?>
+                            <div>
+                                <label class="text-xs font-bold text-gray-500 uppercase truncate block"><?php echo $c['Field']; ?></label>
+                                <input type="text" name="<?php echo $c['Field']; ?>" class="w-full border rounded px-2 py-1 text-sm focus:ring-1 focus:ring-green-500 outline-none">
                             </div>
-
-                            <?php foreach ($pk_cols as $pk): ?>
-                              <input type="hidden" name="pk_<?php echo h($pk); ?>" value="<?php echo h($rowdata[$pk]); ?>">
-                            <?php endforeach; ?>
-
-                            <div class="pt-2">
-                              <button type="submit" class="px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700">Guardar canvis</button>
-                            </div>
-                          </form>
+                        <?php endforeach; ?>
+                        <div class="md:col-span-4 flex justify-end mt-2">
+                            <button type="submit" class="bg-green-600 text-white font-bold py-2 px-6 rounded hover:bg-green-700">Crear</button>
                         </div>
-                        <?php
-                    } else {
-                        echo "<p class='text-red-600 mt-4'>No s'ha trobat el registre per a editar.</p>";
-                    }
-                } else {
-                    echo "<p class='text-red-600 mt-4'>Error preparing select per editar: " . h($conn->error) . "</p>";
-                }
-            }
-        } else {
-            echo "<p class='text-red-600 mt-4'>Paràmetres d'edició invàlids.</p>";
-        }
-    }
-    ?>
+                    </form>
+                </div>
+            </details>
+        </div>
 
-  </div>
+        <div class="bg-white border rounded shadow overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 whitespace-nowrap">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase sticky left-0 bg-gray-50 z-10 border-r">Accions</th>
+                        <?php foreach ($columns as $c): ?>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase"><?php echo htmlspecialchars($c['Field']); ?></th>
+                        <?php endforeach; ?>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 bg-white">
+                    <?php if (empty($data)): ?>
+                        <tr><td colspan="100" class="px-6 py-8 text-center text-gray-500">No hi ha dades.</td></tr>
+                    <?php else: ?>
+                        <?php foreach ($data as $row): 
+                            $owner = $row['created_by'] ?? null;
+                            $can_edit = $is_admin || ($has_owner_col && $owner == $current_user_id);
+                            // SI LA COLUMNA NO EXISTE, DEJAMOS EDITAR A TODOS (O puedes restringirlo a solo admin)
+                            if (!$has_owner_col) $can_edit = true;
+                        ?>
+                        <tr class="<?php echo $can_edit ? 'hover:bg-blue-50' : 'bg-gray-50 text-gray-500'; ?> group transition">
+                            <td class="px-4 py-2 sticky left-0 bg-inherit border-r z-10 flex items-center gap-3">
+                                <?php if ($can_edit): ?>
+                                    <?php 
+                                        $pk_vals_assoc = [];
+                                        foreach($pk_cols as $pk) $pk_vals_assoc[$pk] = $row[$pk];
+                                        $edit_link = '?table=' . urlencode($table) . '&edit=' . rawurlencode(json_encode($pk_vals_assoc));
+                                    ?>
+                                    <a href="<?php echo $edit_link; ?>" class="text-blue-600 hover:scale-110 transition transform" title="Editar">✏️</a>
+
+                                    <form method="post" onsubmit="return confirm('Eliminar?');" class="inline">
+                                        <input type="hidden" name="action" value="delete">
+                                        <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+                                        <?php foreach ($pk_cols as $pk): ?>
+                                            <input type="hidden" name="pk_<?php echo $pk; ?>" value="<?php echo htmlspecialchars($row[$pk]); ?>">
+                                        <?php endforeach; ?>
+                                        <button class="text-red-500 hover:scale-110 transition transform" title="Eliminar">🗑</button>
+                                    </form>
+                                <?php else: ?>
+                                    <span class="text-gray-300 cursor-not-allowed">🔒</span>
+                                <?php endif; ?>
+                            </td>
+                            <?php foreach ($columns as $c): 
+                                $val = $row[$c['Field']];
+                                if ($c['Field'] === 'created_by' && $has_owner_col) $val = ($val == $current_user_id) ? 'Tu' : $val;
+                            ?>
+                                <td class="px-4 py-2 text-sm max-w-xs truncate"><?php echo htmlspecialchars($val ?? ''); ?></td>
+                            <?php endforeach; ?>
+                        </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+
+        <?php if ($total_pages > 1): ?>
+            <div class="flex justify-center mt-6 gap-2">
+                <?php for ($i = max(1, $page - 2); $i <= min($total_pages, $page + 2); $i++): ?>
+                    <a href="?table=<?php echo urlencode($table); ?>&page=<?php echo $i; ?>" class="px-3 py-1 border rounded <?php echo $i==$page?'bg-blue-600 text-white':'bg-white'; ?>"><?php echo $i; ?></a>
+                <?php endfor; ?>
+            </div>
+        <?php endif; ?>
+
+    <?php endif; ?>
+  </main>
 </body>
 </html>
