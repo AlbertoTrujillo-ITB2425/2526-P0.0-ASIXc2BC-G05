@@ -1,209 +1,494 @@
-# Documentació per a Administradors — P0.0-ASIXc2BC-G05
+# Manual d’Administrador — 2526-P0.0-ASIXc2BC-G05
 
-Aquest document resumeix les tasques d'instal·lació, operació i manteniment destinades a administradors. No inclou secrets; aquests han d'estar guardats fora del repositori (variables d'entorn, gestor de secrets o fitxers amb permisos restringits).
+## Índex
 
-CONTINGUT
-- Introducció
-- Requisits i accessos
-- Desplegament de l'aplicació web
-- Gestió de la base de dades
-  - Creació d'usuari admin limitat
-  - Backups i restauració
-  - Import de dades CSV
-- Gestió DHCP
-- Router R-NCC (resum de configuració)
-- Fitxers de configuració i on trobar-los
-- Secrets i bones pràctiques
-- Monitorització i logs
-- Tasques periòdiques i scripts
-- Resolució d'incidències comunes
-- Contactes i referències
+1. [Visió general del projecte](#1-visió-general-del-projecte)  
+2. [Esquema de xarxa](#2-esquema-de-xarxa)  
+3. [Infraestructura desplegada](#3-infraestructura-desplegada)  
+4. [Guia ràpida de desplegament](#4-guia-ràpida-de-desplegament)  
+5. [Configuració de serveis](#5-configuració-de-serveis)  
+   - [DHCP](#51-configuració-dhcp)  
+   - [Router R-NCC (Linux router + NAT)](#52-configuració-del-router-r-ncc)  
+   - [Servidor FTP / File Server](#53-servidor-ftp--file-server-f-ncc)  
+   - [DNS](#54-configuració-dns-d-ncc)  
+   - [Web + Base de dades](#55-web--base-de-dades)  
+6. [Seguretat i firewall](#6-seguretat-i-firewall)  
+7. [Monitorització i backups](#7-monitorització-i-backups)  
+8. [Taula-resum de la topologia](#8-taula-resum-de-la-topologia)  
+9. [Fitxers i recursos del repositori](#9-fitxers-i-recursos-del-repositori)  
 
 ---
 
-## Introducció
-Repositori: P0.0-ASIXc2BC-G05  
-Ubicació fitxers de configuració: `/files` al repositori (veure enllaços README).  
-Objectiu: servidor web (W-NCC), base dades (B-NCC), DHCP, servidor de fitxers (F-NCC) i clients.
+## 1. Visió general del projecte
+
+Projecte de pràctiques del **grup G05 (ASIXc2BC)**, planificat en **3 sprints de 2 setmanes** (fins al **18/11**), que desplega una infraestructura de xarxa amb:
+
+- Router central (R‑NCC).
+- Xarxa **DMZ** amb serveis públics (web, DNS, FTP).
+- Xarxa **Intranet** amb base de dades.
+- Xarxa **NAT** per a clients i servidor DHCP.
+- Scripts de **monitorització** i **backup**.
+
+Planificació del projecte:  
+[Tauler de tasques a Proofhub](https://itecbcn.proofhub.com/bapplite/#app/todos/project-9335566085/list-269936034851)
 
 ---
 
-## Requisits i accessos
-- Accés SSH amb usuari administrador a cada màquina (web, db, router si aplica).
-- Accés MySQL/MariaDB amb usuari amb permisos d'administració per crear usuaris i backups.
-- Accés al dispositiu R-NCC per revisar rutes i VLANs (consola o SSH segons implementació).
-- Eines recomanades: git, mysql client, mariadb-server, apache2/nginx, rsync, tar, cron.
+## 2. Esquema de xarxa
+
+Arquitectura dividida en 3 subxarxes (totes /26) interconnectades pel router R‑NCC.
+
+- **NAT (clients + DHCP)** — 192.168.5.128/26  
+- **DMZ (serveis públics)** — 192.168.5.0/26  
+- **Intranet (serveis interns)** — 192.168.5.64/26  
+
+Diagrama complet:  
+[Esquema de xarxa (Packet Tracer)](https://drive.google.com/file/d/1sruDIO3lY_b99p6khwERN0n-WELGoI5u/view?usp=sharing)
 
 ---
 
-## Desplegament de l'aplicació web (W-NCC)
-1. Instal·lar dependències bàsiques:
-   - Exemple Debian/Ubuntu:
-     - sudo apt update
-     - sudo apt install -y git apache2 php php-mysql unzip
-2. Clonar el codi al DocumentRoot:
-   - cd /var/www/html
-   - git clone https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05.git
-   - Ajustar propietats:
-     - sudo chown -R www-data:www-data /var/www/html/2526-P0.0-ASIXc2BC-G05/public
-3. Configuració del VirtualHost (ex. equipaments.conf):
-   - Fitxer: ./files/apache2/equipaments.conf (veure repo)
-   - Habilitar el site i reiniciar Apache:
-     - sudo a2ensite equipaments.conf
-     - sudo systemctl reload apache2
-4. Fitxer de configuració de l'aplicació (no versionar):
-   - Crear `config_admin.php` basant-se en la plantilla (veure exemple entregat).
-   - Emmagatzemar credencials en variables d'entorn o un fitxer fora del repo.
-   - Afegir `config_admin.php` a `.gitignore`.
+## 3. Infraestructura desplegada
 
-Recomanació de seguretat:
-- Forçar HTTPS (TLS), configurar certificats (Let's Encrypt) i redireccionar HTTP -> HTTPS.
-- Limitar permisos d'arxius i directori (www-data amb mínims permisos).
+| Rol            | Host  | IP / Xarxa           | Lloc |
+|----------------|-------|----------------------|------|
+| Router WAN/DMZ/Intranet/NAT | R‑NCC | 192.168.5.1 / .65 / .129 | Router central |
+| Web Server     | W‑NCC | 192.168.5.20/26 (DMZ) | Apache + PHP |
+| DNS Server     | D‑NCC | 192.168.5.30/26 (DMZ) | BIND |
+| File/FTP Server| F‑NCC | 192.168.5.40/26 (DMZ) | FTP / SMB |
+| DB Server      | B‑NCC | 192.168.5.80/26 (Intranet) | MySQL/MariaDB |
+| DHCP Server    |       | 192.168.5.140/26 (NAT)| isc-dhcp-server |
+| Client Windows | CLIWIN| 192.168.5.130/26 (NAT)| Client |
+| Client Linux   | CLILIN| 192.168.5.131/26 (NAT)| Client |
 
 ---
 
-## Gestió de la base de dades (B-NCC)
+## 4. Guia ràpida de desplegament
 
-### Creació i usuari admin limitat
-- Script suggerit: `mysql_init_admin.sql` (veure exemple).
-- Crear usuari d'aplicació amb permisos mínims:
-  - Usuari: `admin_app`@`localhost`
-  - Permisos: SELECT, INSERT, UPDATE, DELETE sobre `Educacio.*`
-  - No utilitzar root per l'aplicació.
-- Si la web accedeix des d'una IP diferent, canviar l'host de l'usuari (`'admin_app'@'IP_DEL_WEB'`) amb precaució.
+Aquesta secció és una “checklist” perquè puguis anar pas a pas. Si alguna cosa dona error, revisa l’apartat específic (DHCP, DNS, etc.) i els fitxers de logs indicats.
 
-Comandes d'execució:
-- mysql -u root -p < mysql_init_admin.sql
+### 4.1 Ordre recomanat
 
-### Backups
-- Script de backup: `backup_mysql.sh` (veure `/files/backup_mysql.sh`).
-- Recomanacions:
-  - Crear usuari `backup_user` amb permisos de `LOCK TABLES`, `SELECT`, `SHOW VIEW`, `TRIGGER` i `EVENT` si cal.
-  - Emmagatzemar backups en un directori amb permisos restringits, i sincronitzar-los a un servidor remot amb rsync.
-  - Exemple de crontab (backup diari a les 02:00):
-    - 0 2 * * * /usr/local/bin/backup_mysql.sh >> /var/log/backup_mysql.log 2>&1
-- Retenció: conservar mínim 7 dies; rotar amb `find /backups -type f -mtime +7 -delete` o eines específiques.
-
-### Restauració
-- Restorar amb mysql client:
-  - mysql -u root -p Educacio < backup-file.sql
-- Si falla, revisar permisos, versions de MySQL/MariaDB i caràcters (charset).
-
-### Import de CSV
-- Comanda SQL per IMPORT:
-  - Utilitzar `LOAD DATA LOCAL INFILE '/path/equipaments_utf8.csv' INTO TABLE equipaments_educacio ...` (veure exemple al repo).
-- Abans d'executar:
-  - Col·locar el fitxer CSV al servidor de B-NCC.
-  - Assegurar `local_infile=1` en la configuració MySQL si s'usa `LOAD DATA LOCAL`.
-  - Fer un backup previ.
+1. [Configurar el router R‑NCC](#52-configuració-del-router-r-ncc)  
+2. [Configurar DHCP a la xarxa NAT](#51-configuració-dhcp)  
+3. [Configurar DNS (D‑NCC)](#54-configuració-dns-d-ncc)  
+4. [Configurar Web + DB](#55-web--base-de-dades)  
+5. [Configurar File/FTP Server](#53-servidor-ftp--file-server-f-ncc)  
+6. [Aplicar regles de firewall](#6-seguretat-i-firewall)  
+7. [Activar monitorització i backups](#7-monitorització-i-backups)  
 
 ---
 
-## Gestió DHCP
-Fitxer de configuració principal: `/etc/dhcp/dhcpd.conf` — plantilla disponible a `/files/dhcp/dhcpd.conf`.
+### 4.2 Comprovacions bàsiques
 
-Punts clau:
-- Revisar rangs, gateways i DNS.
-- Hosts amb reserves (ex. PC0_CLIWIN, PC1_CLILIN) — actualitzar MAC addresses.
-- Reiniciar servei després de canvis:
-  - sudo systemctl restart isc-dhcp-server
-- Logs a: `/var/log/syslog` (filtrar per `dhcpd`).
+Des de cada servidor comprova:
 
----
+```bash
+# 1) IP correcta i interfície activa
+ip addr show
 
-## Router R-NCC (resum)
-- Paper: encaminador entre VLANs, gateway exterior.
-- Comprovar:
-  - Rutes estàtiques o protocols de rerouting si s'usa.
-  - ACLs i polítiques de firewall entre VLANs i DMZ.
-  - NAT/port forwarding si es necessiten serveis exposats a Internet (preferible PFS i revocations).
-- Fitxer de configuració local: `./files/router_r-ncc.conf` (veure repo).
-- Mantingues còpia de la configuració i documenta canvis; aplicar control de versions offline.
+# 2) Ping al router
+ping -c 2 192.168.5.1
 
----
+# 3) Ping al DNS
+ping -c 2 192.168.5.30
 
-## Fitxers de configuració i ubicacions (resum)
-- Repo /files:
-  - router_r-ncc.conf — configuració router
-  - dhcp/dhcpd.conf — DHCP
-  - mysql_init.sql — esquema DB
-  - backup_mysql.sh — script backups
-  - apache2/equipaments.conf — Apache site
-  - webserver_config.conf / config_admin.php (plantilla) — configuració app (no versionar amb secrets)
-- Ajusta rutes locals segons la instal·lació a producció.
+# 4) Resolució DNS (un cop BIND estigui configurat)
+dig web.g5.local @192.168.5.30
+```
+
+Si alguna d’aquestes proves falla, no segueixis: arregla primer IP/xarxa o DNS abans de continuar.
 
 ---
 
-## Secrets i bones pràctiques
-- No versionar contrasenyes ni claus. Afegir a .gitignore:
-  - /config_admin.php
-  - /.env
-- Emmagatzemar secrets mitjançant:
-  - Variables d'entorn (Systemd unit, `/etc/environment` amb permisos 600)
-  - Docker secrets o Vault per entorns containeritzats
-- Generar contrasenyes fortes (ex. openssl rand -base64 32) i rotar periòdicament.
+## 5. Configuració de serveis
+
+### 5.1 Configuració DHCP
+
+**Host:** DHCP Server — 192.168.5.140/26 (xarxa NAT)  
+**Fitxer:** [`files/dhcp/dhcpd.conf`](../files/dhcp/dhcpd.conf)
+
+```bash
+sudo apt install -y isc-dhcp-server
+sudo nano /etc/dhcp/dhcpd.conf
+```
+
+Exemple de configuració (ús actual al projecte):
+
+```bash
+option domain-name "g5.local";
+option domain-name-servers 192.168.5.30;
+default-lease-time 86400;
+max-lease-time 604800;
+authoritative;
+
+subnet 192.168.5.128 netmask 255.255.255.192 {
+  range 192.168.5.132 192.168.5.139;
+  option routers 192.168.5.129;
+  option subnet-mask 255.255.255.192;
+  option domain-name-servers 192.168.5.30;
+  option broadcast-address 192.168.5.191;
+}
+
+host CLILIN {
+  hardware ethernet 52:54:00:39:be:b1;
+  fixed-address 192.168.5.131;
+}
+
+host CLIWIN {
+  hardware ethernet 52:54:00:1E:47:7A;
+  fixed-address 192.168.5.130;
+}
+```
+
+**Activar servei:**
+
+```bash
+sudo systemctl enable isc-dhcp-server
+sudo systemctl restart isc-dhcp-server
+sudo systemctl status isc-dhcp-server
+```
+
+**Si tens errors:**
+
+- Mira `/var/log/syslog` o `/var/log/dhcpd.log`  
+- Confirma que la interfície correcte està definida a `/etc/default/isc-dhcp-server` (`INTERFACESv4="enp0sX"`).  
 
 ---
 
-## Monitorització i logs
-- Logs importants:
-  - Apache/Nginx: /var/log/apache2/*.log
-  - MySQL: /var/log/mysql/*.log o /var/log/mysqld.log
-  - DHCP: /var/log/syslog (filtrar)
-  - Aplicació: ruta `logs/` dins del projecte (NO versionar)
-- Recomanacions:
-  - Integrar amb eina de monitorització (Prometheus + Grafana, Zabbix, Nagios).
-  - Alertes per errors 5xx, temps de resposta elevat, espai en disc, fallades de backups i connexió DB.
-  - Configurar rotació de logs (logrotate) per a arxius d'aplicació i sistemes.
+### 5.2 Configuració del Router R-NCC
+
+**Host:** R‑NCC (Linux actuant com a router)  
+**Fitxer de referència:** [`files/router_r-ncc.conf`](../files/router_r-ncc.conf)
+
+Passos essencials:
+
+1. **Assignar IPs a les interfícies:**
+
+```bash
+sudo ip addr add 192.168.5.1/26   dev enp0s8   # DMZ
+sudo ip addr add 192.168.5.65/26  dev enp0s9   # Intranet
+sudo ip addr add 192.168.5.129/26 dev enp0s10  # NAT
+sudo ip link set enp0s8 up
+sudo ip link set enp0s9 up
+sudo ip link set enp0s10 up
+```
+
+2. **Activar IP forwarding:**
+
+```bash
+echo 1 | sudo tee /proc/sys/net/ipv4/ip_forward
+sudo sed -i 's/^#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/' /etc/sysctl.conf
+sudo sysctl -p
+```
+
+3. **Configurar NAT/PAT cap a Internet (WAN enp0s3):**
+
+```bash
+sudo iptables -t nat -A POSTROUTING -s 192.168.5.0/24 -o enp0s3 -j MASQUERADE
+```
+
+4. **Redirecció de ports cap a serveis de la DMZ:**
+
+```bash
+# HTTP/HTTPS → Web Server
+sudo iptables -t nat -A PREROUTING -i enp0s3 -p tcp --dport 80  -j DNAT --to 192.168.5.20:80
+sudo iptables -t nat -A PREROUTING -i enp0s3 -p tcp --dport 443 -j DNAT --to 192.168.5.20:443
+
+# FTP/SSH → File Server
+sudo iptables -t nat -A PREROUTING -i enp0s3 -p tcp --dport 21  -j DNAT --to 192.168.5.40:21
+sudo iptables -t nat -A PREROUTING -i enp0s3 -p tcp --dport 22  -j DNAT --to 192.168.5.40:22
+```
+
+**Per fer-ho persistent:** instal·la `iptables-persistent` i desa les regles.
+
+```bash
+sudo apt install -y iptables-persistent
+sudo iptables-save | sudo tee /etc/iptables/rules.v4
+```
+
+Si tens problemes de navegació des de clients, comprova:
+
+- IPs i gateways dels clients.  
+- Que `ip_forward` estigui a 1.  
+- Que no hi hagi un altre firewall bloquejant el tràfic.
 
 ---
 
-## Tasques periòdiques i scripts
-- Backups diaris de B-NCC (script `backup_mysql.sh`):
-  - Comprovar integritat i restaurabilitat mensualment.
-- Actualitzacions de seguretat:
-  - Parar temps de manteniment per actualitzar paquets (apt upgrade) i reiniciar serveis si cal.
-- Revisions de seguretat:
-  - Analitzar permisos de fitxers i comptes, revisar logs d'accés i errors.
-- Crontab:
-  - 0 2 * * * /usr/local/bin/backup_mysql.sh
-  - 0 4 * * 0 /usr/bin/apt update && /usr/bin/apt -y upgrade >> /var/log/apt_upgrade.log 2>&1
+### 5.3 Servidor FTP / File Server (F-NCC)
+
+**Host:** F‑NCC — 192.168.5.40/26  
+**Objectiu:** FTP segur + possible SMB per a xarxa interna.
+
+1. **Instal·lar vsftpd:**
+
+```bash
+sudo apt install -y vsftpd openssl
+```
+
+2. **Generar certificat per FTPS (si cal):**
+
+```bash
+sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+  -keyout /etc/ssl/private/vsftpd.key \
+  -out /etc/ssl/certs/vsftpd.crt
+```
+
+3. **Configurar `/etc/vsftpd.conf`:** (resum)
+
+```bash
+listen=YES
+listen_ipv6=NO
+anonymous_enable=NO
+local_enable=YES
+write_enable=YES
+chroot_local_user=YES
+allow_writeable_chroot=YES
+
+listen_address=192.168.5.40
+pasv_enable=YES
+pasv_min_port=40000
+pasv_max_port=50000
+pasv_address=192.168.5.40
+
+ssl_enable=YES
+rsa_cert_file=/etc/ssl/certs/vsftpd.crt
+rsa_private_key_file=/etc/ssl/private/vsftpd.key
+
+xferlog_enable=YES
+log_ftp_protocol=YES
+```
+
+4. **Reiniciar servei:**
+
+```bash
+sudo systemctl restart vsftpd
+sudo systemctl status vsftpd
+```
+
+Si tens errors, revisa `/var/log/vsftpd.log` i `/var/log/syslog`.
 
 ---
 
-## Resolució d'incidències comunes
-- Web: 500 Internal Server Error
-  - Revisar logs Apache `/var/log/apache2/error.log`
-  - Comprovar config d'aplicació (DB credentials)
-- DB: Connexió refusada
-  - Verificar que MySQL està en execució (systemctl status mysql)
-  - Comprovar `bind-address` en `mysqld.cnf` si la connexió és remota
-- DHCP: Clients no reben IP
-  - Revisar servei (`systemctl status isc-dhcp-server`)
-  - Comprovar conflictes d'IP, rangs i bloqueigs MAC
-- Backups: fitxers corruptes o incapaços de restaurar
-  - Comprovar la mida, checksum i provar restauració en entorn de staging
-  - Revisar permisos i espai en disc
+### 5.4 Configuració DNS (D-NCC)
+
+**Host:** D‑NCC — 192.168.5.30/26  
+**Programari:** BIND9  
+
+1. **Instal·lar BIND:**
+
+```bash
+sudo apt install -y bind9 bind9utils
+```
+
+2. **Fitxers de zona (resum):**
+
+- Zona directa `g5.local`: [`db.g5.local`](../files/dns/db.g5.local) (camí de referència)  
+- Zones reverses: `db.192.168.5.0`, `db.192.168.5.64`, `db.192.168.5.128`  
+
+Exemple de registre (zona directa):
+
+```bind
+@       IN      NS      dns.g5.local.
+dns     IN      A       192.168.5.30
+web     IN      A       192.168.5.20
+ftp     IN      A       192.168.5.40
+db      IN      A       192.168.5.80
+```
+
+3. **Validar configuració i reiniciar:**
+
+```bash
+sudo named-checkconf
+sudo named-checkzone g5.local /etc/bind/db.g5.local
+sudo systemctl restart bind9
+sudo systemctl status bind9
+```
+
+4. **Provar resolució:**
+
+```bash
+dig web.g5.local @192.168.5.30
+dig -x 192.168.5.20 @192.168.5.30
+```
 
 ---
 
-## Comandes útils ràpides
-- Reiniciar serveis:
-  - sudo systemctl restart apache2
-  - sudo systemctl restart mysql
-  - sudo systemctl restart isc-dhcp-server
-- Ver estat:
-  - sudo systemctl status apache2
-  - sudo systemctl status mysql
-- Comprovar ports (netstat / ss):
-  - ss -tulnp | grep :80
-  - ss -tulnp | grep :3306
-- Consultar logs:
-  - tail -f /var/log/apache2/error.log
-  - tail -f /var/log/mysql/error.log
+### 5.5 Web + Base de dades
+
+**Web Server W‑NCC (Apache + PHP)**  
+**DB Server B‑NCC (MySQL/MariaDB)**
+
+#### Web Server
+
+1. **Instal·lar Apache + PHP:**
+
+```bash
+sudo apt install -y apache2 php php-mysql git
+```
+
+2. **Clonar el projecte:**
+
+```bash
+cd /var/www/html
+sudo git clone https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05.git .
+```
+
+3. **Activar VirtualHost (equipaments.conf):**
+
+Fitxer al repo: [`files/apache2/equipaments.conf`](../files/apache2/equipaments.conf)
+
+```bash
+sudo cp files/apache2/equipaments.conf /etc/apache2/sites-available/equipaments.conf
+sudo a2ensite equipaments.conf
+sudo a2enmod ssl headers rewrite
+sudo systemctl reload apache2
+```
+
+4. **Certificat HTTPS de proves:**
+
+```bash
+sudo openssl req -x509 -newkey rsa:4096 -keyout /etc/ssl/private/equipaments.key \
+  -out /etc/ssl/certs/equipaments.crt -days 365 -nodes
+```
+
+Comprova que els camins al VirtualHost coincideixen.
+
+#### Base de dades (B‑NCC)
+
+1. **Instal·lar MySQL/MariaDB:**
+
+```bash
+sudo apt install -y mariadb-server
+```
+
+2. **Crear BD i usuari:**
+
+```bash
+sudo mysql -u root -p <<'SQL'
+CREATE DATABASE IF NOT EXISTS `Educacio` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+CREATE USER IF NOT EXISTS 'bchecker'@'localhost' IDENTIFIED BY 'bchecker121';
+GRANT ALL PRIVILEGES ON `Educacio`.* TO 'bchecker'@'localhost';
+FLUSH PRIVILEGES;
+SQL
+```
+
+3. **(Opcional) Importar dades:**  
+
+```bash
+sudo mysql -u root -p Educacio < /path/to/backup.sql
+```
+
+Si l’aplicació no es connecta:
+
+- Revisa `config` de l’aplicació (host, usuari, contrasenya).  
+- Comprova que el firewall del servidor DB permet el port 3306 des del Web Server.  
 
 ---
 
-## Contactes i referències
-- Repositoris i fitxers: https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05
-- Proofhub (planificació): https://itecbcn.proofhub.com/bapplite/#app/todos/project-9335566085/list-269936034851
+## 6. Seguretat i firewall
+
+El projecte utilitza `ufw` per simplificar regles a cada host.
+
+### Exemple: Web Server (W‑NCC)
+
+```bash
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+sudo ufw allow from 192.168.5.64/26 to any port 22
+sudo ufw allow from 192.168.5.128/26 to any port 22
+
+sudo ufw enable
+sudo ufw status
+```
+
+Aplica una lògica similar:
+
+- DB: només 3306 des de W‑NCC.  
+- FTP: 21, 22, 40000–50000/tcp.  
+- DNS: port 53/udp+tcp per a totes les xarxes internes.
+
+---
+
+## 7. Monitorització i backups
+
+### 7.1 Script de monitorització — `network_analyser.sh`
+
+**Objectiu:** comprovar hosts i ports crítics cada X temps i registrar-ho en un log.
+
+Fitxer al repo:  
+[`files/network_analyser.sh`](../files/network_analyser.sh)
+
+Instal·lació amb `cron` (cada 10 minuts):
+
+```bash
+sudo cp files/network_analyser.sh /usr/local/bin/network_analyser.sh
+sudo chmod +x /usr/local/bin/network_analyser.sh
+
+sudo crontab -e
+# Afegir:
+*/10 * * * * /usr/local/bin/network_analyser.sh >> /var/log/network_analyser.log 2>&1
+```
+
+Si no es genera el log, comprova rutes i permisos d’execució.
+
+---
+
+### 7.2 Script de backup — `system_backup.sh`
+
+**Objectiu:** fer còpies de seguretat de configuracions i BD, rotar backups i registrar-ho.
+
+Fitxer al repo:  
+[`files/system_backup.sh`](../files/system_backup.sh)
+
+Ús recomanat (un cop al dia de matinada):
+
+```bash
+sudo cp files/system_backup.sh /usr/local/bin/system_backup.sh
+sudo chmod +x /usr/local/bin/system_backup.sh
+
+sudo crontab -e
+# Exemple: cada dia a les 03:00
+0 3 * * * /usr/local/bin/system_backup.sh >> /var/log/system_backup.log 2>&1
+```
+
+Comprova:
+
+- Espai en disc a la carpeta de backups.  
+- Que el script pot accedir a fitxers de config i a MySQL.  
+
+---
+
+## 8. Taula-resum de la topologia
+
+| Dispositiu  | IP                 | Xarxa     | Funció                          |
+|-------------|--------------------|-----------|----------------------------------|
+| R‑NCC (WAN) | DHCP               | Internet  | Gateway principal               |
+| R‑NCC DMZ   | 192.168.5.1/26     | DMZ       | Gateway DMZ                     |
+| R‑NCC Intra | 192.168.5.65/26    | Intranet  | Gateway Intranet                |
+| R‑NCC NAT   | 192.168.5.129/26   | NAT       | Gateway NAT                     |
+| W‑NCC       | 192.168.5.20/26    | DMZ       | Servidor Web                    |
+| D‑NCC       | 192.168.5.30/26    | DMZ       | Servidor DNS                    |
+| F‑NCC       | 192.168.5.40/26    | DMZ       | Servidor FTP/fitxers            |
+| B‑NCC       | 192.168.5.80/26    | Intranet  | Servidor de base de dades       |
+| DHCP        | 192.168.5.140/26   | NAT       | Servidor DHCP                   |
+| CLIWIN      | 192.168.5.130/26   | NAT       | Client Windows                  |
+| CLILIN      | 192.168.5.131/26   | NAT       | Client Linux                    |
+
+---
+
+## 9. Fitxers i recursos del repositori
+
+- Router: [`files/router_r-ncc.conf`](../files/router_r-ncc.conf)  
+- DHCP: [`files/dhcp/dhcpd.conf`](../files/dhcp/dhcpd.conf)  
+- BD: [`files/mysql_init.sql`](../files/mysql_init.sql), [`files/backup_mysql.sh`](../files/backup_mysql.sh), [`files/backup.sql`](../files/backup.sql)  
+- Web: [`files/webserver_config.conf`](../files/webserver_config.conf), [`files/apache2/equipaments.conf`](../files/apache2/equipaments.conf)  
+- Monitorització: [`files/network_analyser.sh`](../files/network_analyser.sh)  
+- Backups: [`files/system_backup.sh`](../files/system_backup.sh)  
+
+---
+
+**Última actualització:** 2025-11-11  
+**Versió del manual:** 2.1  
