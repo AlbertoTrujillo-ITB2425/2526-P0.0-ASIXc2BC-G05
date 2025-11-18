@@ -1,3 +1,4 @@
+<?php require_once "includes/header.php"; ?>
 <?php
 require 'includes/config.php';
 session_start();

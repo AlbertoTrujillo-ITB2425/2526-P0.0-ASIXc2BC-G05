@@ -1,3 +1,4 @@
+<?php require_once "includes/header.php"; ?>
 <?php
 // includes/helpers.php - Versión Blindada contra errores de permisos
 

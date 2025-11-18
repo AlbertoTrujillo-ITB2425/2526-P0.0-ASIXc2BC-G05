@@ -1,3 +1,4 @@
+<?php require_once "includes/header.php"; ?>
 <?php
 // includes/config.php
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);

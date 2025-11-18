@@ -1,3 +1,4 @@
+<?php require_once "includes/header.php"; ?>
 <?php
 // google-callback.php - Processa la resposta de Google
 require __DIR__ . '/vendor/autoload.php';

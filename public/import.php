@@ -1,3 +1,4 @@
+<?php require_once "includes/header.php"; ?>
 <?php
 // import.php - Importador blindado contra errores de permisos (CREATE)
 ini_set('display_errors', 1);

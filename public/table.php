@@ -1,3 +1,4 @@
+<?php require_once "includes/header.php"; ?>
 <?php
 // table.php - Versión Final Robusta (Compatible con cualquier permiso de BD)
 
