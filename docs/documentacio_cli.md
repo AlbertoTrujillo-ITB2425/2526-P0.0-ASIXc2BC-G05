@@ -1,105 +1,216 @@
-# Guia ràpida per a usuaris — P0.0-ASIXc2BC-G05
+# Manual d'Usuari — Sistema Equipaments Educació
 
-Aquesta guia està pensada per a usuaris i clients que utilitzen l'aplicació i els serveis exposats pel projecte. Aquí trobaràs com accedir als serveis, operacions bàsiques i què fer si tens un problema. Si necessites ajuda avançada administrativa, contacta amb l'equip tècnic (veure final).
+## Índex
 
----
-
-## Accés a l'aplicació web (W-NCC)
-- URL de l'aplicació: consulta l'adreça proporcionada pel teu administrador (ex. https://equipaments.example.org).
-- Requisits:
-  - Navegador modern (Chrome, Firefox, Edge, Safari).
-  - Connexió a la xarxa de l'organització o accés remot autoritzat.
-- Inici de sessió:
-  - Utilitza l'usuari i la contrasenya que t'hagi facilitat l'administrador.
-  - Per raons de seguretat, canvia la contrasenya la primera vegada que iniciïs sessió si així t'indiquen.
-- Si no tens credencials, sol·licita-les a l'administrador.
+1. [Què és aquest sistema?](#1-què-és-aquest-sistema)  
+2. [Com accedir](#2-com-accedir)  
+3. [Com utilitzar la web](#3-com-utilitzar-la-web)  
+4. [Serveis disponibles](#4-serveis-disponibles)  
+5. [Preguntes freqüents (FAQ)](#5-preguntes-freqüents-faq)  
+6. [Si tens problemes…](#6-si-tens-problemes)  
 
 ---
 
-## Funcions comunes per a usuaris
-- Cercar i visualitzar registres:
-  - Utilitza el formulari de cerca o els filtres de la pàgina principal per localitzar equipaments per nom, codi postal o població.
-- Descàrrega de dades:
-  - Si està habilitada, trobaràs enllaços per descarregar dades en CSV o PDF des de la vista d'equipament o des de la secció d'exportacions.
-- Visualització de mapes:
-  - Algunes entitats mostren la ubicació geogràfica dels equipaments en un mapa (assegura que el navegador permet geolocalització si cal).
-- Puja d'arxius (si està permès):
-  - Tipus de fitxers permesos i límit de mida: consulta les polítiques internes (ex. PDF, JPG, PNG; 10 MB per fitxer).
-  - No pujar informació confidencial ni dades personals sensibles sense autorització.
+## 1. Què és aquest sistema?
+
+És una **aplicació web** que et permet consultar informació sobre **equipaments educatius** (escoles, instituts, etc.).
+
+### Què hi pots fer?
+
+- Veure **llista de centres** i dades bàsiques.
+- Filtrar per **nom**, **districte** o **tipus de centre**.
+- Veure **adreça** i **localització** aproximada.
+- Accedir de forma **segura** via **HTTPS**.
+
+No cal tenir coneixements tècnics; només un navegador web actualitzat.
 
 ---
 
-## Accés a compartició de fitxers (F-NCC / DMZ)
-- Si tens permís per accedir a recursos compartits:
-  - Des de Windows: \\\\{servidor}\{recurs} (ex. \\fileserver\public) — consulta credencials amb l'administrador.
-  - Des de Linux: muntar via smb/cifs o SFTP segons indiqui l'administrador.
-- Regles a seguir:
-  - Respectar la política de retenció i noms d'arxiu.
-  - No modificar fitxers crítics si no tens autorització.
-  - Etiquetar i organitzar fitxers segons la convenció d'empreses.
+## 2. Com accedir
+
+### 2.1 Requisits
+
+- Un d’aquests navegadors actualitzats:
+  - Google Chrome  
+  - Mozilla Firefox  
+  - Microsoft Edge  
+  - Safari  
+- Connexió a internet (o a la xarxa del centre / VPN si s’indica).
+
+### 2.2 Passos per entrar a la web
+
+1. Obre el navegador.  
+2. Escriu l’adreça a la barra:  
+
+   `https://g5.cat`  
+
+3. Si el navegador mostra un avís de seguretat:
+   - Fes clic a **“Avançat”**.  
+   - Fes clic a **“Continuar”** o similar.  
+
+> El certificat és **autofirmat** (de prova). És normal veure un avís la primera vegada.
+
+4. Espera uns segons fins que es carregui la pàgina principal.
 
 ---
 
-## Ús de serveis de xarxa i DHCP (clients)
-- La majoria d'equips obtenen IP automàticament via DHCP.
-- Si tens problemes de connexió:
-  - Reinicia la connexió de xarxa o l'equip.
-  - Comprova el cable o la connexió Wi‑Fi.
-  - Si segueix sense connectar, contacta amb l'administrador indicant l'ubicació i la MAC o el nom de l'equip.
+## 3. Com utilitzar la web
+
+### 3.1 Pàgina principal
+
+Quan entres veuràs una pàgina amb:
+
+- Encapçalament amb el títol del sistema.  
+- Zona de **cerca o filtres** (nom, districte, tipus…).  
+- Una **taula o llista** amb els equipaments educatius.  
+
+(La disposició exacta pot variar segons la versió, però sempre tindrà una zona de llista i una zona de filtres.)
+
+### 3.2 Cercar un equipament
+
+Opcions típiques:
+
+- **Cerca per nom**  
+  - Escriu el nom (o part del nom) del centre.  
+  - Prem **“Cercar”** o el botó equivalent.
+
+- **Filtrar per districte**  
+  - Tria un districte del desplegable (si existeix).  
+  - S’actualitza la llista de centres.
+
+- **Filtrar per tipus**  
+  - Exemples: escola, institut, centre de formació…  
+  - Selecciona el tipus i s’actualitza la llista.
+
+### 3.3 Veure informació detallada
+
+A la taula/llista, per cada equipament acostumaràs a veure:
+
+- **Nom del centre**  
+- **Adreça**  
+- **Tipus d’equipament**  
+- (Opcional) **Horari**  
+- (Opcional) **Coordenades / informació de localització**
+
+En alguns casos pot aparèixer un enllaç o botó del tipus **“Més informació”**.
 
 ---
 
-## Procediment per reportar incidències
-Quan detectis un problema, facilita la màxima informació possible al fer la incidència:
-- Quin servei afecta (web, descàrrega, accés a fitxers, correu, etc.).
-- Pasos per reproduir l'error.
-- Captura de pantalla o missatge d'error (si n'hi ha).
-- Hora i data (inclou zona horària).
-- El teu nom i contacte (correu o telèfon).
-- Si és relacionat amb fitxers: nom del fitxer i ruta.
-Contacte d'administració: proporciona el correu o el formulari d'incidències que t'ha facilitat la teva organització.
+## 4. Serveis disponibles
+
+No cal que configuris res, però és útil saber què hi ha “per sota”.
+
+### 4.1 Web (W‑NCC)
+
+- Allà és on viu l’aplicació que veus al navegador.  
+- Adreça: `https://g5.cat`  
+
+### 4.2 Servidor de fitxers (F‑NCC)
+
+- El centre pot tenir un servidor de fitxers associat.  
+- L’accés normalment és només **intern** (xarxa del centre).
+
+### 4.3 Xarxa i connexió
+
+- Les màquines solen obtenir la IP **automàticament (DHCP)**.  
+- La resolució de noms (DNS) s’aplica també de forma automàtica.  
+
+Si estàs en un ordinador del centre, normalment **ja està tot preparat**.
 
 ---
 
-## Solucions ràpides (FAQ)
-- No puc iniciar sessió:
-  - Assegura't que utilitzes l'usuari i contrasenya correctes.
-  - Prova fer "recuperar contrasenya" si està disponible.
-  - Si no, sol·licita restabliment al suport.
-- Pàgina web no carrega / error 500:
-  - Recarrega la pàgina (Ctrl+F5).
-  - Prova obrir amb un altre navegador.
-  - Si persisteix, envia un informe al suport amb captura de pantalla.
-- No puc descarregar un fitxer:
-  - Revisa permisos i espai en disc local.
-  - Intenta amb un altre navegador o desactiva extensions que bloquegin descàrregues.
-- Connexió a recursos compartits fallida:
-  - Confirma la ruta i les credencials.
-  - Intenta desconnectar i tornar a connectar la unitat.
+## 5. Preguntes freqüents (FAQ)
+
+### ❓ No puc accedir a la web
+
+**Possibles causes:**
+
+- No tens connexió a internet.  
+- No estàs dins la xarxa del centre (si cal).  
+- No has acceptat el certificat de seguretat.
+
+**Què puc fer?**
+
+1. Comprova que pots obrir altres pàgines (p. ex. `https://www.google.com`).  
+2. Torna a obrir `https://g5.cat` i:
+   - Si surt avís de seguretat, fes **“Avançat” → “Continuar”**.  
+3. Si encara no funciona, contacta amb l’administrador del sistema.
 
 ---
 
-## Privadesa i seguretat per a usuaris
-- No comparteixis credencials amb altres persones.
-- No guardis contrasenyes en llocs públics ni les enviïs per correu sense encriptació.
-- Si sospites que el teu compte ha estat compromès, canvia la contrasenya i avisa de seguida a l'administrador.
-- Complir la normativa interna sobre dades personals (GDPR o normativa local aplicable).
+### ❓ La web va molt lenta
+
+**Possibles causes:**
+
+- Connexió d’internet lenta.  
+- Massa pestanyes obertes.  
+- Servidor carregat puntualment.
+
+**Què puc fer?**
+
+1. Tanca pestanyes o programes que no calguin.  
+2. Prova a **actualitzar** la pàgina (tecla `F5`).  
+3. Si el problema és continu, avisa a suport.
 
 ---
 
-## Bones pràctiques d'ús
-- Fer còpies de seguretat locals dels teus documents importants.
-- Netejar fitxers temporals i no emmagatzemar informació sensible en carpetes públiques.
-- Respectar les polítiques d'ús d'Internet i d'emmagatzematge establertes per la teva organització.
+### ❓ No trobo el centre que busco
+
+**Possibles causes:**
+
+- El nom s’ha escrit de forma diferent.  
+- El centre encara no està a la base de dades.
+
+**Què puc fer?**
+
+1. Prova amb parts del nom (per exemple, només una paraula).  
+2. Utilitza el filtre per **districte** o **tipus**.  
+3. Si tot i així no apareix, pots comunicar-ho a suport perquè revisin la base de dades.
 
 ---
 
-## Preguntes freqüents i tutorials
-- Si hi ha tutorials o vídeos d'ús, l'enllaç estarà disponible a la pantalla d'inici de l'aplicació o t'ho facilitarà l'administrador.
-- Per formacions, sol·licita una sessió amb l'equip tècnic.
+## 6. Si tens problemes
+
+### 6.1 Problemes de connexió o “lloc no segur”
+
+1. Torna a provar d’entrar a: `https://g5.cat`  
+2. Si el navegador diu **“Lloc no segur”** o **“Certificat no vàlid”**:
+   - Fes clic a **“Més informació”** o **“Avançat”**.  
+   - Escull **“Continuar amb el lloc”**.  
+
+Si després d’això continua sense carregar:
+
+- Comprova si tens internet.  
+- Si estàs a casa, consulta si cal VPN del centre.  
+- Contacta amb el professor o amb el responsable de TI.
+
+### 6.2 No obtens IP (el PC diu “Sense internet”)
+
+Si l’ordinador ha de rebre IP automàticament i veus que no tens xarxa:
+
+**Windows**
+
+1. Obre el menú Inici, escriu `cmd`.  
+2. Botó dret → “Executar com a administrador”.  
+3. Escriu:
+
+```bash
+ipconfig /release
+ipconfig /renew
+```
+
+**Linux**
+
+1. Obre un terminal.  
+2. Escriu:
+
+```bash
+sudo dhclient -r
+sudo dhclient
+```
+
+Si segueix sense funcionar, probablement és un problema de xarxa o del servidor DHCP i ho ha de revisar l’administrador.
 
 ---
 
-## Contacte i suport
-- Per a problemes tècnics o d'accés: contacta amb l'equip d'administració (correu, telèfon o sistema de tickets proporcionat).
-- Per a consultes sobre dades i funcionalitats: consulta primer amb el teu responsable de procés o amb l'administrador de l'aplicació.
+Si necessites una ajuda més tècnica (per exemple, revisar logs, configuració de xarxa, etc.), consulta el **Manual d’Administrador**: [`docs/ADMIN_MANUAL.md`](ADMIN_MANUAL.md).
