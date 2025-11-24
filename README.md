@@ -67,7 +67,7 @@ Resum dels principals components de la infraestructura:
   - Gestió de còpies de seguretat  
 - Fitxers principals:  
   - Inicialització: `./files/mysql_init.sql`  
-  - Backup: `./files/backup_mysql.sh`
+  - Backup: `./files/db_backup.sql`
 
 ### Web Server (W‑NCC)
 - Funció:  
@@ -98,7 +98,7 @@ Apartat pensat perquè qualsevol administrador pugui desplegar ràpidament la de
 - Servidor **Linux** (Ubuntu/Debian recomanat) o màquina virtual  
 - Accés d’**administrador** (SSH/terminal)  
 - Connexió a Internet  
-- (Opcional) Fitxer `backup.sql` per carregar dades d’exemple
+- Fitxer `/files/db_backup.sql` per carregar dades 
 
 ---
 
