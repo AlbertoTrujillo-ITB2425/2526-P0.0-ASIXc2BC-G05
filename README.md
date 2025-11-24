@@ -1,3 +1,4 @@
+
 # 2526-P0.0-ASIXc2BC-G05
 
 Índex
@@ -7,7 +8,7 @@
 3. [Infraestructura desplegada](#3-infraestructura-desplegada)  
 4. [Desplegament inicial (demo)](#4-desplegament-inicial-demo)  
 5. [Manuals i documentació](#5-manuals-i-documentació)  
-6. [Fitxers clau](#6-Proves-de-Funcionalitat)  
+6. [Proves Funcionalitat](#6-Proves-de-Funcionalitat)  
 7. [Bibliografia i referències](#7-bibliografia-i-referències)
 
 ---
@@ -67,7 +68,7 @@ Resum dels principals components de la infraestructura:
   - Gestió de còpies de seguretat  
 - Fitxers principals:  
   - Inicialització: `./files/mysql_init.sql`  
-  - Backup: `./files/db_backup.sql`
+  - Backup: [Descarregar db_backup.sql](https://raw.githubusercontent.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/bd9f20bca038667edfc01e405502d586fb7c5b31/files/db_backup.sql)
 
 ### Web Server (W‑NCC)
 - Funció:  
@@ -214,3 +215,4 @@ Per mantenir aquest README senzill i visual, la documentació detallada s’ha s
 
 - **Desplegar servidor FTP en Ubuntu:**  
   [Guia IONOS — instal·lació i configuració FTP](https://www.ionos.com/es-us/digitalguide/servidores/configuracion/servidor-ftp-en-ubuntu-instalacion-y-configuracion/)
+```
