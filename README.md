@@ -215,4 +215,8 @@ Per mantenir aquest README senzill i visual, la documentació detallada s’ha s
 
 - **Desplegar servidor FTP en Ubuntu:**  
   [Guia IONOS — instal·lació i configuració FTP](https://www.ionos.com/es-us/digitalguide/servidores/configuracion/servidor-ftp-en-ubuntu-instalacion-y-configuracion/)
-```
+
+- Configurar Servidor Web amb Domini Local
+  [Guia com configurar un Domini Local amb Apache](https://www.digitalocean.com/community/tutorials/how-to-set-up-apache-virtual-hosts-on-ubuntu-18-04-es/)
+
+  
