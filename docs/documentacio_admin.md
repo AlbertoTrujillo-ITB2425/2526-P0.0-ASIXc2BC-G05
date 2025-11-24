@@ -15,7 +15,7 @@
 6. [Seguretat i firewall](#6-seguretat-i-firewall)  
 7. [Monitorització i backups](#7-monitorització-i-backups)  
 8. [Taula-resum de la topologia](#8-taula-resum-de-la-topologia)  
-9. [Fitxers i recursos del repositori](#9-fitxers-i-recursos-del-repositori)  
+9. [Dades suscepibles de separació](#9-Dades-susceptibles-de-separació)  
 
 ---
 
