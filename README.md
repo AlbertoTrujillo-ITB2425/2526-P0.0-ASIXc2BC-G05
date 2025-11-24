@@ -131,13 +131,14 @@ FLUSH PRIVILEGES;
 SQL
 ```
 
-#### 4) Importar dades d’exemple (opcional)
+#### 4) Importar dades a la base de dades
 
 Si disposes de `backup.sql`:
 
 ```bash
-sudo mysql -u root -p Educacio < backup.sql
+mysql -u bchecker -p Educacio < backup.sql
 ```
+> Recorda passwd **bchecker121**
 
 #### 5) Configurar Apache i HTTPS bàsic per a la demo
 
