@@ -481,7 +481,7 @@ Comprova:
 
 ## 9. Dades susceptibles de separació
 
-El procés d'importació inicial del fitxer CSV va resultar en una base de dades **no normalitzada** i de difícil gestió. Per millorar la **integritat** de les dades, **optimitzar-ne** la cerca i **evitar la redundància**, es va implementar la **normalització**, separant les dades en les següents taules: 
+- El procés d'importació inicial del fitxer CSV va resultar en una base de dades **no normalitzada** i de difícil gestió. Per millorar la **integritat** de les dades, **optimitzar-ne** la cerca i **evitar la  redundància**, es va implementar la **normalització**, separant les dades en les següents taules: 
 ---
 
 * **`Adreces`**
