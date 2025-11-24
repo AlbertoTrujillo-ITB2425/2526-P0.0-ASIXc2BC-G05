@@ -20,7 +20,7 @@ Aquest projecte és el treball de pràctiques del **grup G05 (ASIXc2BC)**.
 - Eina de planificació: **Proofhub**  
 - Estructura: **3 sprints** de **2 setmanes**  
 - Dedicació: **5 hores setmanals**  
-- Durada total: **6 setmanes** (fins al **18/11**)  
+- Durada total: **6 setmanes** (fins al **1/12**)  
 - Repositori principal: **P0.0-ASIXc2BC-G05**
 
 Enllaç al tauler de tasques (Proofhub):  
@@ -216,7 +216,7 @@ Per mantenir aquest README senzill i visual, la documentació detallada s’ha s
 - **Desplegar servidor FTP en Ubuntu:**  
   [Guia IONOS — instal·lació i configuració FTP](https://www.ionos.com/es-us/digitalguide/servidores/configuracion/servidor-ftp-en-ubuntu-instalacion-y-configuracion/)
 
-- Configurar Servidor Web amb Domini Local
+- **Configurar Servidor Web amb Domini Local:**
   [Guia com configurar un Domini Local amb Apache](https://www.digitalocean.com/community/tutorials/how-to-set-up-apache-virtual-hosts-on-ubuntu-18-04-es/)
 
   
