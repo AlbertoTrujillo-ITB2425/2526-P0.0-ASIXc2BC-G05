@@ -193,33 +193,15 @@ Per mantenir aquest README senzill i visual, la documentació detallada s’ha s
 
 ---
 
-## 6. Fitxers clau
-
-En aquesta secció es recullen els fitxers més importants, amb enllaç directe:
-
-- **router_r-ncc.conf** — configuració del router  
-  - Ruta: `./files/router_r-ncc.conf`  
-  - [Descarregar router_r-ncc.conf](https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/router_r-ncc.conf)
-
-- **dhcpd.conf** — configuració del servidor DHCP  
-  - Ruta: `./files/dhcp/dhcpd.conf`  
-  - [Descarregar dhcpd.conf](https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/dhcp/dhcpd.conf)
-
-- **mysql_init.sql** — creació i estructura inicial de la BD `Educacio`  
-  - Ruta: `./files/mysql_init.sql`  
-  - [Descarregar mysql_init.sql](https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/mysql_init.sql)
-
-- **backup_mysql.sh** — script de còpia de seguretat  
-  - Ruta: `./files/backup_mysql.sh`  
-  - [Descarregar backup_mysql.sh](https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/backup_mysql.sh)
-
-- **Configuració del servidor web**  
-  - `./files/webserver_config.conf`  
-    - [Descarregar webserver_config.conf](https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/webserver_config.conf)  
-  - `./files/apache2/equipaments.conf`  
-    - [Descarregar equipaments.conf](https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05/blob/main/files/apache2/equipaments.conf)
-
----
+## 6. Proves de Funcionalitat
+| Servei | Comprovant
+|---|---|
+| Router | (sense imatge) |
+| DHCP | ![](https://github.com/user-attachments/assets/0fa7feb0-9d64-49b8-a9be-1ba97135d521) |
+| SSH | ![](https://github.com/user-attachments/assets/12294633-81be-40ae-a520-f143ecceec5f) |
+| Base de Dades | ![](https://github.com/user-attachments/assets/a4668b46-e030-4504-a653-2446b3f09c33) |
+| Web | ![](https://github.com/user-attachments/assets/e07be053-3257-40ec-9803-fafe2e0ef14e) |
+| FTP | (sense imatge) |
 
 ## 7. Bibliografia i referències
 
