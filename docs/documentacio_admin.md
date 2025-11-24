@@ -479,16 +479,24 @@ Comprova:
 
 ---
 
-## 9. Fitxers i recursos del repositori
+## 9. Dades susceptibles de separació
 
-- Router: [`files/router_r-ncc.conf`](../files/router_r-ncc.conf)  
-- DHCP: [`files/dhcp/dhcpd.conf`](../files/dhcp/dhcpd.conf)  
-- BD: [`files/mysql_init.sql`](../files/mysql_init.sql), [`files/backup_mysql.sh`](../files/backup_mysql.sh), [`files/backup.sql`](../files/backup.sql)  
-- Web: [`files/webserver_config.conf`](../files/webserver_config.conf), [`files/apache2/equipaments.conf`](../files/apache2/equipaments.conf)  
-- Monitorització: [`files/network_analyser.sh`](../files/network_analyser.sh)  
-- Backups: [`files/system_backup.sh`](../files/system_backup.sh)  
+El procés d'importació inicial del fitxer CSV va resultar en una base de dades **no normalitzada** i de difícil gestió. Per millorar la **integritat** de les dades, **optimitzar-ne** la cerca i **evitar la redundància**, es va implementar la **normalització**, separant les dades en les següents taules: 
+---
+
+* **`Adreces`**
+    * Conté: `ID` i informació de la **`Ubicació`** (adreça física completa).
+* **`Centres`**
+    * Conté: `ID_Centre`, **`Nom_Centre`** i l'**`ID_Institució`** (si pertany a una institució superior).
+* **`Geolocalització`**
+    * Conté: `ID_Centre` (clau forana) i les **coordenades** (`Latitud` i `Longitud`).
+* **`Filtres`**
+    * Conté: Les **categories** i **etiquetes** (tipus de centre, titularitat, etc.) que permeten la classificació i cerca dels centres.
+* **`Valors_Contacte`**
+    * Conté: Dades de **contacte** relacionades amb el centre, com ara el **`Telèfon`** o el correu electrònic.
 
 ---
+
 
 **Última actualització:** 2025-11-11  
 **Versió del manual:** 2.1  
