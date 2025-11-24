@@ -7,7 +7,7 @@
 3. [Infraestructura desplegada](#3-infraestructura-desplegada)  
 4. [Desplegament inicial (demo)](#4-desplegament-inicial-demo)  
 5. [Manuals i documentació](#5-manuals-i-documentació)  
-6. [Fitxers clau](#6-fitxers-clau)  
+6. [Fitxers clau](#6-Proves-de-Funcionalitat)  
 7. [Bibliografia i referències](#7-bibliografia-i-referències)
 
 ---
