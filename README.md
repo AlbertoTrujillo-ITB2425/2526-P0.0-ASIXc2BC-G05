@@ -178,14 +178,14 @@ Assegura’t que els camins del certificat (`equipaments.crt` / `equipaments.key
 Per mantenir aquest README senzill i visual, la documentació detallada s’ha separat en manuals específics:
 
 - **Guia per administradors (admins):**  
-  `docs/ADMIN_MANUAL.md`  
+  `docs/documentacio_admin.md`  
   Conté:  
   - Configuració avançada de xarxa i serveis  
   - Gestió de còpies de seguretat  
   - Manteniment de l’aplicació i dels servidors  
 
 - **Guia per usuaris (users):**  
-  `docs/USER_MANUAL.md`  
+  `docs/documentacio_cli.md`  
   Conté:  
   - Com accedir a l’aplicació  
   - Funcionament bàsic de la interfície  
