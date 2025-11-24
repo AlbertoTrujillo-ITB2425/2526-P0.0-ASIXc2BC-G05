@@ -485,15 +485,17 @@ Comprova:
 ---
 
 * **`Adreces`**
-    * Conté: `ID` i informació de la **`Ubicació`** (adreça física completa).
+    * Conté: `ID_Centre` i informació de la **`Ubicació`** (adreça física completa).
 * **`Centres`**
     * Conté: `ID_Centre`, **`Nom_Centre`** i l'**`ID_Institució`** (si pertany a una institució superior).
 * **`Geolocalització`**
     * Conté: `ID_Centre` (clau forana) i les **coordenades** (`Latitud` i `Longitud`).
 * **`Filtres`**
-    * Conté: Les **categories** i **etiquetes** (tipus de centre, titularitat, etc.) que permeten la classificació i cerca dels centres.
-* **`Valors_Contacte`**
-    * Conté: Dades de **contacte** relacionades amb el centre, com ara el **`Telèfon`** o el correu electrònic.
+    * Conté: `ID_Centre` Les **categories** i **etiquetes** (tipus de centre, titularitat, etc.) que permeten la classificació i cerca dels centres.
+* **`Valors`**
+    * Conté: `Id_Centre` Dades de **contacte** relacionades amb el centre, com ara el **`Telèfon`** o el correu electrònic.
+
+Com pudeu observar sempre mantenim el ID_Centre com a clau foranea per comunicar totes les taules
 
 ---
 
