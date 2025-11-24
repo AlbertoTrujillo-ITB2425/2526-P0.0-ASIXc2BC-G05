@@ -198,12 +198,12 @@ Per mantenir aquest README senzill i visual, la documentació detallada s’ha s
 
 | Servei | Comprovant |
 |---|---|
-| Router | (sense imatge) |
-| DHCP | <img src="https://github.com/user-attachments/assets/0fa7feb0-9d64-49b8-a9be-1ba97135d521" alt="DHCP" width="300" /> |
-| SSH | <img src="https://github.com/user-attachments/assets/12294633-81be-40ae-a520-f143ecceec5f" alt="SSH" width="300" /> |
-| Base de Dades | <img src="https://github.com/user-attachments/assets/a4668b46-e030-4504-a653-2446b3f09c33" alt="Base de Dades" width="300" /> |
-| Web | <img src="https://github.com/user-attachments/assets/e07be053-3257-40ec-9803-fafe2e0ef14e" alt="Web" width="300" /> |
-| FTP | (sense imatge) |
+| Router | Prova: tenir connectivitat amb tots els dispositius (prova proporcionada per l'usuari). (sense imatge) |
+| DHCP | ipconfig /renew a Windows per comprovar que el servidor respon. <br/><img src="https://github.com/user-attachments/assets/0fa7feb0-9d64-49b8-a9be-1ba97135d521" alt="DHCP" width="360" /> |
+| SSH | Accés SSH des d'una altra màquina. <br/><img src="https://github.com/user-attachments/assets/12294633-81be-40ae-a520-f143ecceec5f" alt="SSH" width="360" /> |
+| Base de Dades | Veure que existeix la base de dades i mostrar les taules. <br/><img src="https://github.com/user-attachments/assets/a4668b46-e030-4504-a653-2446b3f09c33" alt="Base de Dades" width="360" /> |
+| Web | Accedir al domini des d'una altra màquina. <br/><img src="https://github.com/user-attachments/assets/e07be053-3257-40ec-9803-fafe2e0ef14e" alt="Web" width="360" /> |
+| FTP | Pujar algun fitxer al servidor (prova proporcionada per l'usuari). (sense imatge) |
 
 ## 7. Bibliografia i referències
 
