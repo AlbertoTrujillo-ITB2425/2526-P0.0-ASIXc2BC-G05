@@ -206,7 +206,29 @@ Per mantenir aquest README senzill i visual, la documentació detallada s’ha s
 | Web | Accedir al domini des d'una altra màquina. | <img src="https://github.com/user-attachments/assets/e07be053-3257-40ec-9803-fafe2e0ef14e" alt="Web" width="400" /> |
 | FTP | Pujar algun fitxer al servidor. | <img src="https://github.com/user-attachments/assets/c432403f-5f0e-43bf-b722-2f60fedc9b51" alt="FTP" width="400" /> |
 
-## 7. Bibliografia i referències
+## 7. Integrar MYSqL al web i proves de consulta
+- Per poder Integrar mysql al php necesitem proporcionar les dades de conexio a un fitxer.php en aquest cas el tenim a /public/includes/config.php amb aixo ja podra mostrar totes les taules de la base de dades Educacio
+```php
+<?php require_once "includes/header.php"; ?>
+<?php
+// includes/config.php
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+
+$host = '192.168.5.80';
+$user = 'bchecker';
+$pass = 'bchecker121';
+$db   = 'Educacio';
+
+try {
+    $conn = new mysqli($host, $user, $pass, $db, 3306);
+    $conn->set_charset("utf8mb4");
+} catch (mysqli_sql_exception $e) {
+    die("Error de connexió: " . $e->getMessage());
+}
+?>
+```
+
+## 8. Bibliografia i referències
 
 - **Mostrar dades MySQL amb PHP:**  
   [Tutorial de SiteGround](https://www.siteground.es/tutoriales/php-mysql/mostrar-datos-tablas-mysql/)
