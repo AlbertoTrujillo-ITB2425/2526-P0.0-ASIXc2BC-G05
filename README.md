@@ -41,7 +41,8 @@ L’arquitectura del projecte està basada en:
 **Descarregar esquema de xarxa (Packet Tracer):**  
 https://drive.google.com/file/d/1sruDIO3lY_b99p6khwERN0n-WELGoI5u/view?usp=sharing
  
-<img width="1374" height="735" alt="image" src="https://github.com/user-attachments/assets/f540322a-7fab-4ce5-ac4e-7e72d98bea63" />
+<img width="1374" height="735" alt="image" src="https://github.com/user-attachments/assets/2535beec-122f-4d4f-8876-c96519b683e9" />
+
 
 
 
