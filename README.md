@@ -8,8 +8,9 @@
 3. [Infraestructura desplegada](#3-infraestructura-desplegada)  
 4. [Desplegament inicial (demo)](#4-desplegament-inicial-demo)  
 5. [Manuals i documentació](#5-manuals-i-documentació)  
-6. [Proves Funcionalitat](#6-Proves-de-Funcionalitat)  
-7. [Bibliografia i referències](#7-bibliografia-i-referències)
+6. [Proves Funcionalitat](#6-Proves-de-Funcionalitat)
+7. [MySQL i proves de consulta](#7-Integrar-MYSqL-al-web-i-proves-de-consulta)    
+8. [Bibliografia i referències](#7-bibliografia-i-referències)
 
 ---
 
@@ -207,7 +208,7 @@ Per mantenir aquest README senzill i visual, la documentació detallada s’ha s
 | FTP | Pujar algun fitxer al servidor. | <img src="https://github.com/user-attachments/assets/c432403f-5f0e-43bf-b722-2f60fedc9b51" alt="FTP" width="400" /> |
 
 ## 7. Integrar MYSqL al web i proves de consulta
-- Per poder Integrar mysql al php necesitem proporcionar les dades de conexio a un fitxer.php en aquest cas el tenim a /public/includes/config.php amb aixo ja podra mostrar totes les taules de la base de dades Educacio
+- Per poder Integrar mysql al php necesitem proporcionar les dades de conexio a un fitxer.php en aquest cas el tenim a ***/public/includes/config.php*** amb aixo ja podra mostrar totes les taules de la base de dades Educacio
 ```php
 <?php require_once "includes/header.php"; ?>
 <?php
