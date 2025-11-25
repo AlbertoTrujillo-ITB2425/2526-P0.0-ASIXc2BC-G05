@@ -42,7 +42,8 @@ L’arquitectura del projecte està basada en:
 https://drive.google.com/file/d/1sruDIO3lY_b99p6khwERN0n-WELGoI5u/view?usp=sharing
 
 Imatge de referència (topologia):  
-![Esquema de xarxa](https://github.com/user-attachments/assets/bae3db11-eba9-46ba-a99c-0463bbbf78d0)
+<img width="1374" height="735" alt="image" src="https://github.com/user-attachments/assets/6c052fdd-bead-49cc-990f-d7c82b1cf6be" />
+
 
 ---
 
