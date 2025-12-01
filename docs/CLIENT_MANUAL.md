@@ -17,9 +17,9 @@
 
 ### Què hi pots fer?
 
-- Veure **llista de centres** i dades bàsiques.
-- Filtrar per **nom**, **districte** o **tipus de centre**.
-- Veure **adreça** i **localització** aproximada.
+- Veure **llista de centres** i dades bàsiques.  
+- Filtrar per **nom**, **districte** o **tipus de centre**.  
+- Veure **adreça** i **localització** aproximada.  
 - Accedir de forma **segura** via **HTTPS**.
 
 No cal tenir coneixements tècnics; només un navegador web actualitzat.
@@ -30,17 +30,17 @@ No cal tenir coneixements tècnics; només un navegador web actualitzat.
 
 ### 2.1 Requisits
 
-- Un d’aquests navegadors actualitzats:
+- Navegador actualitzat:
   - Google Chrome  
   - Mozilla Firefox  
   - Microsoft Edge  
   - Safari  
-- Connexió a internet (o a la xarxa del centre / VPN si s’indica).
+- Connexió a Internet (o a la xarxa del centre / VPN si s’indica).
 
 ### 2.2 Passos per entrar a la web
 
 1. Obre el navegador.  
-2. Escriu l’adreça a la barra:  
+2. Escriu l’adreça a la barra:
 
    `https://g5.cat`  
 
@@ -64,7 +64,10 @@ Quan entres veuràs una pàgina amb:
 - Zona de **cerca o filtres** (nom, districte, tipus…).  
 - Una **taula o llista** amb els equipaments educatius.  
 
-(La disposició exacta pot variar segons la versió, però sempre tindrà una zona de llista i una zona de filtres.)
+La disposició exacta pot variar, però sempre hi haurà:
+
+- Zona per **introduir filtres / criteris de cerca**.  
+- Zona on es mostra la **llista de resultats**.
 
 ### 3.2 Cercar un equipament
 
@@ -92,7 +95,7 @@ A la taula/llista, per cada equipament acostumaràs a veure:
 - (Opcional) **Horari**  
 - (Opcional) **Coordenades / informació de localització**
 
-En alguns casos pot aparèixer un enllaç o botó del tipus **“Més informació”**.
+En alguns casos hi pot haver un botó o enllaç **“Més informació”**.
 
 ---
 
@@ -103,7 +106,7 @@ No cal que configuris res, però és útil saber què hi ha “per sota”.
 ### 4.1 Web (W‑NCC)
 
 - Allà és on viu l’aplicació que veus al navegador.  
-- Adreça: `https://g5.cat`  
+- Adreça d’accés: `https://g5.cat`
 
 ### 4.2 Servidor de fitxers (F‑NCC)
 
@@ -125,7 +128,7 @@ Si estàs en un ordinador del centre, normalment **ja està tot preparat**.
 
 **Possibles causes:**
 
-- No tens connexió a internet.  
+- No tens connexió a Internet.  
 - No estàs dins la xarxa del centre (si cal).  
 - No has acceptat el certificat de seguretat.
 
@@ -134,7 +137,7 @@ Si estàs en un ordinador del centre, normalment **ja està tot preparat**.
 1. Comprova que pots obrir altres pàgines (p. ex. `https://www.google.com`).  
 2. Torna a obrir `https://g5.cat` i:
    - Si surt avís de seguretat, fes **“Avançat” → “Continuar”**.  
-3. Si encara no funciona, contacta amb l’administrador del sistema.
+3. Si encara no funciona, contacta amb l’administrador del sistema o amb el teu professor.
 
 ---
 
@@ -142,15 +145,15 @@ Si estàs en un ordinador del centre, normalment **ja està tot preparat**.
 
 **Possibles causes:**
 
-- Connexió d’internet lenta.  
+- Connexió d’Internet lenta.  
 - Massa pestanyes obertes.  
 - Servidor carregat puntualment.
 
 **Què puc fer?**
 
 1. Tanca pestanyes o programes que no calguin.  
-2. Prova a **actualitzar** la pàgina (tecla `F5`).  
-3. Si el problema és continu, avisa a suport.
+2. Prova a **actualitzar** la pàgina (`F5`).  
+3. Si el problema és continu, avisa a suport o al professor.
 
 ---
 
@@ -163,9 +166,9 @@ Si estàs en un ordinador del centre, normalment **ja està tot preparat**.
 
 **Què puc fer?**
 
-1. Prova amb parts del nom (per exemple, només una paraula).  
+1. Prova amb parts del nom (una sola paraula).  
 2. Utilitza el filtre per **districte** o **tipus**.  
-3. Si tot i així no apareix, pots comunicar-ho a suport perquè revisin la base de dades.
+3. Si tot i així no apareix, comunica-ho a suport perquè revisin la base de dades.
 
 ---
 
@@ -180,11 +183,13 @@ Si estàs en un ordinador del centre, normalment **ja està tot preparat**.
 
 Si després d’això continua sense carregar:
 
-- Comprova si tens internet.  
-- Si estàs a casa, consulta si cal VPN del centre.  
+- Comprova si tens Internet.  
+- Si estàs a casa, mira si necessites una VPN del centre.  
 - Contacta amb el professor o amb el responsable de TI.
 
-### 6.2 No obtens IP (el PC diu “Sense internet”)
+---
+
+### 6.2 No obtens IP (el PC diu “Sense Internet”)
 
 Si l’ordinador ha de rebre IP automàticament i veus que no tens xarxa:
 
@@ -213,4 +218,5 @@ Si segueix sense funcionar, probablement és un problema de xarxa o del servidor
 
 ---
 
-Si necessites una ajuda més tècnica (per exemple, revisar logs, configuració de xarxa, etc.), consulta el **Manual d’Administrador**: [`docs/ADMIN_MANUAL.md`](ADMIN_MANUAL.md).
+Per a ajuda més tècnica (revisar logs, configuració de xarxa, etc.), consulta el **Manual d’Administrador**:  
+[`ADMIN_MANUAL.md`](ADMIN_MANUAL.md).
