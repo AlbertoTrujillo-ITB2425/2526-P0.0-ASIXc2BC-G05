@@ -15,13 +15,13 @@
 6. [Seguretat i firewall](#6-seguretat-i-firewall)  
 7. [Monitorització i backups](#7-monitorització-i-backups)  
 8. [Taula-resum de la topologia](#8-taula-resum-de-la-topologia)  
-9. [Dades suscepibles de separació](#9-Dades-susceptibles-de-separació)  
+9. [Dades susceptibles de separació](#9-dades-susceptibles-de-separació)  
 
 ---
 
 ## 1. Visió general del projecte
 
-Projecte de pràctiques del **grup G05 (ASIXc2BC)**, planificat en **3 sprints de 2 setmanes** (fins al **18/11**), que desplega una infraestructura de xarxa amb:
+Projecte de pràctiques del **grup G05 (ASIXc2BC)**, que desplega una infraestructura de xarxa amb:
 
 - Router central (R‑NCC).
 - Xarxa **DMZ** amb serveis públics (web, DNS, FTP).
@@ -32,39 +32,42 @@ Projecte de pràctiques del **grup G05 (ASIXc2BC)**, planificat en **3 sprints d
 Planificació del projecte:  
 [Tauler de tasques a Proofhub](https://itecbcn.proofhub.com/bapplite/#app/todos/project-9335566085/list-269936034851)
 
+> Per a un desplegament **demo ràpid** en un sol servidor, consulta el  
+> [`README.md`](../README.md#4-desplegament-inicial-demo).
+
 ---
 
 ## 2. Esquema de xarxa
 
 Arquitectura dividida en 3 subxarxes (totes /26) interconnectades pel router R‑NCC.
 
-- **NAT (clients + DHCP)** — 192.168.5.128/26  
-- **DMZ (serveis públics)** — 192.168.5.0/26  
-- **Intranet (serveis interns)** — 192.168.5.64/26  
+- **NAT (clients + DHCP)** — `192.168.5.128/26`  
+- **DMZ (serveis públics)** — `192.168.5.0/26`  
+- **Intranet (serveis interns)** — `192.168.5.64/26`  
 
-Diagrama complet:  
-[Esquema de xarxa (Packet Tracer)](https://drive.google.com/file/d/1sruDIO3lY_b99p6khwERN0n-WELGoI5u/view?usp=sharing)
+Diagrama complet (Packet Tracer):  
+[Esquema de xarxa](https://drive.google.com/file/d/1sruDIO3lY_b99p6khwERN0n-WELGoI5u/view?usp=sharing)
 
 ---
 
 ## 3. Infraestructura desplegada
 
-| Rol            | Host  | IP / Xarxa           | Lloc |
-|----------------|-------|----------------------|------|
-| Router WAN/DMZ/Intranet/NAT | R‑NCC | 192.168.5.1 / .65 / .129 | Router central |
-| Web Server     | W‑NCC | 192.168.5.20/26 (DMZ) | Apache + PHP |
-| DNS Server     | D‑NCC | 192.168.5.30/26 (DMZ) | BIND |
-| File/FTP Server| F‑NCC | 192.168.5.40/26 (DMZ) | FTP / SMB |
-| DB Server      | B‑NCC | 192.168.5.80/26 (Intranet) | MySQL/MariaDB |
-| DHCP Server    |       | 192.168.5.140/26 (NAT)| isc-dhcp-server |
-| Client Windows | CLIWIN| 192.168.5.130/26 (NAT)| Client |
-| Client Linux   | CLILIN| 192.168.5.131/26 (NAT)| Client |
+| Rol                         | Host   | IP / Xarxa           | Lloc          |
+|-----------------------------|--------|----------------------|---------------|
+| Router WAN/DMZ/Intranet/NAT | R‑NCC  | 192.168.5.1 / .65 / .129 | Router central |
+| Web Server                  | W‑NCC  | 192.168.5.20/26 (DMZ)   | Apache + PHP  |
+| DNS Server                  | D‑NCC  | 192.168.5.30/26 (DMZ)   | BIND          |
+| File/FTP Server             | F‑NCC  | 192.168.5.40/26 (DMZ)   | FTP / fitxers |
+| DB Server                   | B‑NCC  | 192.168.5.80/26 (Intranet) | MySQL/MariaDB |
+| DHCP Server                 |        | 192.168.5.140/26 (NAT)  | isc-dhcp-server |
+| Client Windows              | CLIWIN | 192.168.5.130/26 (NAT)  | Client        |
+| Client Linux                | CLILIN | 192.168.5.131/26 (NAT)  | Client        |
 
 ---
 
 ## 4. Guia ràpida de desplegament
 
-Aquesta secció és una “checklist” perquè puguis anar pas a pas. Si alguna cosa dona error, revisa l’apartat específic (DHCP, DNS, etc.) i els fitxers de logs indicats.
+Aquesta secció és una **checklist**. Si alguna cosa dona error, revisa la subsecció específica (DHCP, DNS, etc.).
 
 ### 4.1 Ordre recomanat
 
@@ -96,7 +99,7 @@ ping -c 2 192.168.5.30
 dig web.g5.local @192.168.5.30
 ```
 
-Si alguna d’aquestes proves falla, no segueixis: arregla primer IP/xarxa o DNS abans de continuar.
+Si alguna d’aquestes proves falla, arregla IP/xarxa o DNS abans de continuar.
 
 ---
 
@@ -104,8 +107,10 @@ Si alguna d’aquestes proves falla, no segueixis: arregla primer IP/xarxa o DNS
 
 ### 5.1 Configuració DHCP
 
-**Host:** DHCP Server — 192.168.5.140/26 (xarxa NAT)  
-**Fitxer:** [`files/dhcp/dhcpd.conf`](../files/dhcp/dhcpd.conf)
+**Host:** DHCP Server — `192.168.5.140/26` (xarxa NAT)  
+**Fitxer del projecte:** [`dhcpd.conf`](../files/dhcp/dhcpd.conf)
+
+Instal·lació:
 
 ```bash
 sudo apt install -y isc-dhcp-server
@@ -140,7 +145,7 @@ host CLIWIN {
 }
 ```
 
-**Activar servei:**
+Activar servei:
 
 ```bash
 sudo systemctl enable isc-dhcp-server
@@ -148,19 +153,20 @@ sudo systemctl restart isc-dhcp-server
 sudo systemctl status isc-dhcp-server
 ```
 
-**Si tens errors:**
+Si tens errors:
 
 - Mira `/var/log/syslog` o `/var/log/dhcpd.log`  
-- Confirma que la interfície correcte està definida a `/etc/default/isc-dhcp-server` (`INTERFACESv4="enp0sX"`).  
+- Confirma que la interfície és correcta a `/etc/default/isc-dhcp-server` (`INTERFACESv4="enp0sX"`).  
 
 ---
 
 ### 5.2 Configuració del Router R-NCC
 
 **Host:** R‑NCC (Linux actuant com a router)  
-**Fitxer de referència:** [`files/router_r-ncc.conf`](../files/router_r-ncc.conf)
+**Fitxer de referència al projecte:**  
+[`router_r-ncc.conf`](../files/router_r-ncc.conf)
 
-Passos essencials:
+#### Passos essencials
 
 1. **Assignar IPs a les interfícies:**
 
@@ -199,14 +205,14 @@ sudo iptables -t nat -A PREROUTING -i enp0s3 -p tcp --dport 21  -j DNAT --to 192
 sudo iptables -t nat -A PREROUTING -i enp0s3 -p tcp --dport 22  -j DNAT --to 192.168.5.40:22
 ```
 
-**Per fer-ho persistent:** instal·la `iptables-persistent` i desa les regles.
+Fer-ho persistent:
 
 ```bash
 sudo apt install -y iptables-persistent
 sudo iptables-save | sudo tee /etc/iptables/rules.v4
 ```
 
-Si tens problemes de navegació des de clients, comprova:
+Si hi ha problemes de navegació des de clients, comprova:
 
 - IPs i gateways dels clients.  
 - Que `ip_forward` estigui a 1.  
@@ -216,7 +222,7 @@ Si tens problemes de navegació des de clients, comprova:
 
 ### 5.3 Servidor FTP / File Server (F-NCC)
 
-**Host:** F‑NCC — 192.168.5.40/26  
+**Host:** F‑NCC — `192.168.5.40/26`  
 **Objectiu:** FTP segur + possible SMB per a xarxa interna.
 
 1. **Instal·lar vsftpd:**
@@ -265,14 +271,23 @@ sudo systemctl restart vsftpd
 sudo systemctl status vsftpd
 ```
 
-Si tens errors, revisa `/var/log/vsftpd.log` i `/var/log/syslog`.
+Revisa `/var/log/vsftpd.log` i `/var/log/syslog` si hi ha errors.
 
 ---
 
 ### 5.4 Configuració DNS (D-NCC)
 
-**Host:** D‑NCC — 192.168.5.30/26  
+**Host:** D‑NCC — `192.168.5.30/26`  
 **Programari:** BIND9  
+
+Fitxers de zona al projecte:
+
+- Zona directa `g5.local`:  
+  [`db.g5.local`](../files/dns/db.g5.local)  
+- Zones reverses (exemples):  
+  [`db.192.168.5.0`](../files/dns/db.192.168.5.0)  
+  [`db.192.168.5.64`](../files/dns/db.192.168.5.64)  
+  [`db.192.168.5.128`](../files/dns/db.192.168.5.128)  
 
 1. **Instal·lar BIND:**
 
@@ -280,12 +295,7 @@ Si tens errors, revisa `/var/log/vsftpd.log` i `/var/log/syslog`.
 sudo apt install -y bind9 bind9utils
 ```
 
-2. **Fitxers de zona (resum):**
-
-- Zona directa `g5.local`: [`db.g5.local`](../files/dns/db.g5.local) (camí de referència)  
-- Zones reverses: `db.192.168.5.0`, `db.192.168.5.64`, `db.192.168.5.128`  
-
-Exemple de registre (zona directa):
+2. **Exemple de registres (zona directa):**
 
 ```bind
 @       IN      NS      dns.g5.local.
@@ -335,7 +345,8 @@ sudo git clone https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05
 
 3. **Activar VirtualHost (equipaments.conf):**
 
-Fitxer al repo: [`files/apache2/equipaments.conf`](../files/apache2/equipaments.conf)
+Fitxer al repo:  
+[`equipaments.conf`](../files/apache2/equipaments.conf)
 
 ```bash
 sudo cp files/apache2/equipaments.conf /etc/apache2/sites-available/equipaments.conf
@@ -376,20 +387,23 @@ SQL
 
 ```bash
 sudo mysql -u root -p Educacio < /path/to/backup.sql
+# o utilitza directament el backup del projecte:
+# sudo mysql -u root -p Educacio < /ruta/al/repo/files/db_backup.sql
 ```
 
 Si l’aplicació no es connecta:
 
-- Revisa `config` de l’aplicació (host, usuari, contrasenya).  
+- Revisa la configuració de connexió:  
+  [`config.php`](../public/includes/config.php)  
 - Comprova que el firewall del servidor DB permet el port 3306 des del Web Server.  
 
 ---
 
 ## 6. Seguretat i firewall
 
-El projecte utilitza `ufw` per simplificar regles a cada host.
+Exemple de configuració amb `ufw`.
 
-### Exemple: Web Server (W‑NCC)
+### Web Server (W‑NCC)
 
 ```bash
 sudo ufw default deny incoming
@@ -404,7 +418,7 @@ sudo ufw enable
 sudo ufw status
 ```
 
-Aplica una lògica similar:
+Aplica una lògica similar a:
 
 - DB: només 3306 des de W‑NCC.  
 - FTP: 21, 22, 40000–50000/tcp.  
@@ -416,10 +430,10 @@ Aplica una lògica similar:
 
 ### 7.1 Script de monitorització — `network_analyser.sh`
 
-**Objectiu:** comprovar hosts i ports crítics cada X temps i registrar-ho en un log.
+Objectiu: comprovar hosts i ports crítics cada X temps i registrar-ho en un log.
 
-Fitxer al repo:  
-[`files/network_analyser.sh`](../files/network_analyser.sh)
+Fitxer al projecte:  
+[`network_analyser.sh`](../files/network_analyser.sh)
 
 Instal·lació amb `cron` (cada 10 minuts):
 
@@ -432,16 +446,14 @@ sudo crontab -e
 */10 * * * * /usr/local/bin/network_analyser.sh >> /var/log/network_analyser.log 2>&1
 ```
 
-Si no es genera el log, comprova rutes i permisos d’execució.
-
 ---
 
 ### 7.2 Script de backup — `system_backup.sh`
 
-**Objectiu:** fer còpies de seguretat de configuracions i BD, rotar backups i registrar-ho.
+Objectiu: fer còpies de seguretat de configuracions i BD, rotar backups i registrar-ho.
 
-Fitxer al repo:  
-[`files/system_backup.sh`](../files/system_backup.sh)
+Fitxer al projecte:  
+[`system_backup.sh`](../files/system_backup.sh)
 
 Ús recomanat (un cop al dia de matinada):
 
@@ -463,42 +475,41 @@ Comprova:
 
 ## 8. Taula-resum de la topologia
 
-| Dispositiu  | IP                 | Xarxa     | Funció                          |
-|-------------|--------------------|-----------|----------------------------------|
-| R‑NCC (WAN) | DHCP               | Internet  | Gateway principal               |
-| R‑NCC DMZ   | 192.168.5.1/26     | DMZ       | Gateway DMZ                     |
-| R‑NCC Intra | 192.168.5.65/26    | Intranet  | Gateway Intranet                |
-| R‑NCC NAT   | 192.168.5.129/26   | NAT       | Gateway NAT                     |
-| W‑NCC       | 192.168.5.20/26    | DMZ       | Servidor Web                    |
-| D‑NCC       | 192.168.5.30/26    | DMZ       | Servidor DNS                    |
-| F‑NCC       | 192.168.5.40/26    | DMZ       | Servidor FTP/fitxers            |
-| B‑NCC       | 192.168.5.80/26    | Intranet  | Servidor de base de dades       |
-| DHCP        | 192.168.5.140/26   | NAT       | Servidor DHCP                   |
-| CLIWIN      | 192.168.5.130/26   | NAT       | Client Windows                  |
-| CLILIN      | 192.168.5.131/26   | NAT       | Client Linux                    |
+| Dispositiu  | IP               | Xarxa     | Funció                     |
+|-------------|------------------|-----------|----------------------------|
+| R‑NCC (WAN) | DHCP             | Internet  | Gateway principal          |
+| R‑NCC DMZ   | 192.168.5.1/26   | DMZ       | Gateway DMZ                |
+| R‑NCC Intra | 192.168.5.65/26  | Intranet  | Gateway Intranet           |
+| R‑NCC NAT   | 192.168.5.129/26 | NAT       | Gateway NAT                |
+| W‑NCC       | 192.168.5.20/26  | DMZ       | Servidor Web               |
+| D‑NCC       | 192.168.5.30/26  | DMZ       | Servidor DNS               |
+| F‑NCC       | 192.168.5.40/26  | DMZ       | Servidor FTP/fitxers       |
+| B‑NCC       | 192.168.5.80/26  | Intranet  | Servidor de base de dades  |
+| DHCP        | 192.168.5.140/26 | NAT       | Servidor DHCP              |
+| CLIWIN      | 192.168.5.130/26 | NAT       | Client Windows             |
+| CLILIN      | 192.168.5.131/26 | NAT       | Client Linux               |
 
 ---
 
 ## 9. Dades susceptibles de separació
 
-- El procés d'importació inicial del fitxer CSV va resultar en una base de dades **no normalitzada** i de difícil gestió. Per millorar la **integritat** de les dades, **optimitzar-ne** la cerca i **evitar la  redundància**, es va implementar la **normalització**, separant les dades en les següents taules: 
+La importació inicial del fitxer CSV va generar una base de dades **no normalitzada**.  
+Per millorar **integritat**, **rendiment** i **evitar redundància**, s’ha aplicat **normalització**, separant les dades en:
+
+- **`Adreces`**  
+  - Conté: `ID_Centre` i informació de la **ubicació** (adreça física completa).
+- **`Centres`**  
+  - Conté: `ID_Centre`, **`Nom_Centre`** i l’**`ID_Institució`** (si pertany a una institució superior).
+- **`Geolocalització`**  
+  - Conté: `ID_Centre` i les **coordenades** (`Latitud` i `Longitud`).
+- **`Filtres`**  
+  - Conté: `ID_Centre`, **categories** i **etiquetes** (tipus de centre, titularitat, etc.).
+- **`Valors`**  
+  - Conté: `ID_Centre` i dades de **contacte** (p. ex. `Telèfon`).
+
+Es manté sempre **`ID_Centre`** com a **clau forana** per relacionar totes les taules.
+
 ---
 
-* **`Adreces`**
-    * Conté: `ID_Centre` i informació de la **`Ubicació`** (adreça física completa).
-* **`Centres`**
-    * Conté: `ID_Centre`, **`Nom_Centre`** i l'**`ID_Institució`** (si pertany a una institució superior).
-* **`Geolocalització`**
-    * Conté: `ID_Centre` i les **coordenades** (`Latitud` i `Longitud`).
-* **`Filtres`**
-    * Conté: `ID_Centre` les **categories** i **etiquetes** (tipus de centre, titularitat, etc.) que permeten la classificació i cerca dels centres.
-* **`Valors`**
-    * Conté: `Id_Centre` i dades de **contacte** relacionades amb el centre, com ara el **`Telèfon`**
-
-Com pudeu observar sempre mantenim el **`ID_Centre`** com a clau foranea per comunicar totes les taules
-
----
-
-
-**Última actualització:** 2025-11-24 
+**Última actualització:** 2025-11-24  
 **Versió del manual:** 2.5  
