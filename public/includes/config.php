@@ -3,7 +3,7 @@
 // includes/config.php
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
-$host = '192.168.5.80'; // O 'localhost' si està en la mateixa màquina
+$host = '192.168.5.140'; // O 'localhost' si està en la mateixa màquina
 $user = 'bchecker';
 $pass = 'bchecker121';
 $db   = 'Educacio';
