@@ -349,10 +349,10 @@ A partir d’aquesta connexió, les pàgines PHP poden:
   [InstalarMySQL al Ubuntu](https://www.digitalocean.com/community/tutorials/how-to-install-mysql-on-ubuntu-20-04-es)
 
 - Manual PHP
-  [Manual General PHP](https://www.php.net/manual/es/)
+  [Manual PHP](https://www.php.net/manual/es/)
 
 - Manual Apache
-  [Manual com configurar Apache](https://httpd.apache.org/docs/)
+  [Manual Apache](https://httpd.apache.org/docs/)
 
   
 
