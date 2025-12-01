@@ -511,5 +511,5 @@ Es manté sempre **`ID_Centre`** com a **clau forana** per relacionar totes les 
 
 ---
 
-**Última actualització:** 2025-11-24  
-**Versió del manual:** 2.5  
+**Última actualització:** 2025-12-1  
+**Versió del manual:** 3.0
