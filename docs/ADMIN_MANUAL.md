@@ -120,29 +120,37 @@ sudo nano /etc/dhcp/dhcpd.conf
 Exemple de configuració (ús actual al projecte):
 
 ```bash
-option domain-name "g5.local";
-option domain-name-servers 192.168.5.30;
-default-lease-time 86400;
-max-lease-time 604800;
+# Configuración global
+option domain-name "G5.cat";
+option domain-name-servers 1.1.1.1;
+
+default-lease-time 600;
+max-lease-time 7200;
+ddns-update-style none;
 authoritative;
 
-subnet 192.168.5.128 netmask 255.255.255.192 {
-  range 192.168.5.132 192.168.5.139;
+subnet 192.168.5.128 netmask 255.255.255.128 {
+  range 192.168.5.160 192.168.5.180;
+
   option routers 192.168.5.129;
-  option subnet-mask 255.255.255.192;
-  option domain-name-servers 192.168.5.30;
-  option broadcast-address 192.168.5.191;
+  option domain-name-servers 1.1.1.1;
 }
 
-host CLILIN {
-  hardware ethernet 52:54:00:39:be:b1;
-  fixed-address 192.168.5.131;
+host PC1_CLIWIN {
+  hardware ethernet 52:54:00:65:E8:36;
+  fixed-address 192.168.5.161;
 }
 
-host CLIWIN {
+host PC0_CLILIN {
+  hardware ethernet 52:54:00:7d:85:dd;
+  fixed-address 192.168.5.160;
+}
+
+host PC2_CLIWIN {
   hardware ethernet 52:54:00:1E:47:7A;
-  fixed-address 192.168.5.130;
+  fixed-address 192.168.5.162;
 }
+
 ```
 
 Activar servei:
