@@ -1,47 +1,79 @@
 #!/bin/bash
-# Instalador + Monitor de red con cron
+# Monitor de xarxa amb registre i cron
+# Aquest script comprova la connectivitat de diversos dispositius i serveis de la xarxa.
+# Guarda els resultats en un fitxer de log i programa la seva execució periòdica amb cron.
 
+# Fitxer de registre
 LOGFILE="/var/log/network_monitor.log"
 
+# Funció per escriure missatges al log amb data i hora
 log(){ echo "$(date '+%F %T') - $1" | tee -a "$LOGFILE"; }
 
-# Instalar dependencias según distro
+# Funció per instal·lar dependències segons el gestor de paquets detectat
 install_deps(){
-  if command -v apt-get >/dev/null; then sudo apt-get update && sudo apt-get install -y iputils-ping netcat cron
-  elif command -v dnf >/dev/null; then sudo dnf install -y iputils netcat cronie
-  elif command -v yum >/dev/null; then sudo yum install -y iputils netcat cronie
-  elif command -v zypper >/dev/null; then sudo zypper install -y iputils netcat cron
-  else log "❌ No se detectó gestor de paquetes"; exit 1; fi
+  if command -v apt-get >/dev/null; then
+    sudo apt-get update && sudo apt-get install -y iputils-ping netcat cron
+  elif command -v dnf >/dev/null; then
+    sudo dnf install -y iputils netcat cronie
+  elif command -v yum >/dev/null; then
+    sudo yum install -y iputils netcat cronie
+  elif command -v zypper >/dev/null; then
+    sudo zypper install -y iputils netcat cron
+  else
+    log "No s'ha detectat cap gestor de paquets compatible"; exit 1
+  fi
 }
 
-# Verificar comandos
-for cmd in ping nc crontab; do command -v $cmd >/dev/null || install_deps; done
+# Comprovem que existeixin els comandos essencials
+for cmd in ping nc crontab; do command -v "$cmd" >/dev/null || install_deps; done
 
-log "=== INICI MONITORITZACIÓ ==="
+log "Inici de monitorització"
 
-# Hosts
+# Hosts de la xarxa segons la topologia indicada
 declare -A HOSTS=(
- ["Router"]="192.168.5.1" ["Web"]="192.168.5.20" ["DNS"]="192.168.5.30"
- ["File"]="192.168.5.40" ["DB"]="192.168.5.80" ["DHCP"]="192.168.5.140"
- ["Win"]="192.168.5.130" ["Linux"]="192.168.5.131"
+  [Router]="192.168.5.1"
+  [W-NCC]="192.168.5.20"
+  [D-NCC]="192.168.5.30"
+  [F-NCC]="192.168.5.40"
+  [B-NCC]="192.168.5.140"
+  [DHCP]="192.168.5.150"
+  [PC0-Linux]="192.168.5.160"
+  [PC1-Windows]="192.168.5.161"
 )
 
-for h in "${!HOSTS[@]}"; do ip=${HOSTS[$h]}
-  ping -c1 -W2 $ip &>/dev/null && log "✅ $h ($ip) accesible" || log "❌ $h ($ip) no accesible"
+# Comprovació de connectivitat amb ping
+for nom in "${!HOSTS[@]}"; do
+  ip=${HOSTS[$nom]}
+  if ping -c1 -W2 "$ip" &>/dev/null; then
+    log "$nom ($ip) és accessible"
+  else
+    log "$nom ($ip) no és accessible"
+  fi
 done
 
-# Servicios
-declare -A SVC=(
- ["HTTP"]="192.168.5.20:80" ["HTTPS"]="192.168.5.20:443" ["DNS"]="192.168.5.30:53"
- ["FTP"]="192.168.5.40:21" ["SSH"]="192.168.5.40:22" ["MySQL"]="192.168.5.80:3306"
+# Serveis principals associats als servidors
+declare -A SERVEIS=(
+  [HTTP]="192.168.5.20:80"
+  [HTTPS]="192.168.5.20:443"
+  [DNS]="192.168.5.30:53"
+  [FTP]="192.168.5.40:21"
+  [SSH]="192.168.5.40:22"
 )
 
-for s in "${!SVC[@]}"; do hp=${SVC[$s]} h=${hp%:*} p=${hp#*:}
-  nc -z -w3 $h $p &>/dev/null && log "✅ $s ($hp) disponible" || log "❌ $s ($hp) no disponible"
+# Comprovació de disponibilitat de serveis amb netcat
+for servei in "${!SERVEIS[@]}"; do
+  hostport=${SERVEIS[$servei]}
+  host=${hostport%:*} port=${hostport#*:}
+  if nc -z -w3 "$host" "$port" &>/dev/null; then
+    log "Servei $servei ($hostport) disponible"
+  else
+    log "Servei $servei ($hostport) no disponible"
+  fi
 done
 
-log "=== FI MONITORITZACIÓ ==="
+log "Fi de monitorització"
 
-# Añadir cron cada 10 min si no existe
-( sudo crontab -l 2>/dev/null | grep -q network_monitor.sh ) || \
-  (sudo crontab -l 2>/dev/null; echo "*/10 * * * * /usr/local/bin/network_monitor.sh") | sudo crontab -
+# Afegir al cron la tasca si no existeix ja
+CRON_CMD="*/10 * * * * /usr/local/bin/network_monitor.sh"
+(crontab -l 2>/dev/null | grep -F "$CRON_CMD") >/dev/null || \
+  (crontab -l 2>/dev/null; echo "$CRON_CMD") | crontab -
