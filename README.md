@@ -203,7 +203,7 @@ SQL
 #### 4) Importar les dades
 
 ```bash
-mysql -u bchecker -p Educacio < files/db_backup.sql
+mysql -u bchecker -p Educacio < db_backup.sql
 # Contrasenya: bchecker121
 ```
 
