@@ -1,15 +1,24 @@
 # 2526-P0.0-ASIXc2BC-G05
 
-Índex
+Sistema d’informació d’**equipaments educatius** desplegat sobre una infraestructura de xarxa segmentada (DMZ, Intranet, NAT) amb serveis web, base de dades, DNS, FTP i scripts de monitorització i backup.
+
+> Aquest document és una **vista general** i una **guia ràpida de desplegament demo**.  
+> Per a details tècnics complets, consulta el  
+> **[Manual d’Administrador](docs/ADMIN_MANUAL.md)** i el  
+> **[Manual d’Usuari](docs/CLIENT_MANUAL.md)**.
+
+---
+
+## Índex
 
 1. [Planificació del projecte](#1-planificació-del-projecte)  
 2. [Esquema de xarxa](#2-esquema-de-xarxa)  
 3. [Infraestructura desplegada](#3-infraestructura-desplegada)  
-4. [Desplegament inicial (demo)](#4-desplegament-inicial-demo)  
+4. [Desplegament inicial (demo ràpida)](#4-desplegament-inicial-demo-ràpida)  
 5. [Manuals i documentació](#5-manuals-i-documentació)  
-6. [Proves de Funcionalitat](#6-proves-de-funcionalitat)  
-7. [Integrar MySQL al web i proves de consulta](#7-integrar-mysql-al-web-i-proves-de-consulta)  
-8. [Bibliografia i referències](#8-bibliografia-i-referències)
+6. [Proves de funcionalitat](#6-proves-de-funcionalitat)  
+7. [Integració MySQL–PHP i proves de consulta](#7-integració-mysqlphp-i-proves-de-consulta)  
+8. [Bibliografia i referències](#8-bibliografia-i-referències)  
 
 ---
 
@@ -17,25 +26,28 @@
 
 Aquest projecte és el treball de pràctiques del **grup G05 (ASIXc2BC)**.
 
-- Eina de planificació: **Proofhub**  
-- Estructura: **3 sprints** de **2 setmanes**  
-- Dedicació: **5 hores setmanals**  
-- Durada total: **6 setmanes** (fins al **1/12**)  
-- Repositori principal: **P0.0-ASIXc2BC-G05**
+| Element             | Detall                               |
+|---------------------|---------------------------------------|
+| Grup                | G05 (ASIXc2BC)                       |
+| Estructura temporal | 3 sprints de 2 setmanes              |
+| Dedicació           | 5 hores setmanals                    |
+| Durada total        | 6 setmanes (fins al 01/12)           |
+| Repositori          | `2526-P0.0-ASIXc2BC-G05`             |
+| Eina de planificació| Proofhub                             |
 
 Enllaç al tauler de tasques (Proofhub):  
-[Tauler de tasques a Proofhub](https://itecbcn.proofhub.com/bapplite/#app/todos/project-9335566085/list-269936034851)
+[Tauler del projecte a Proofhub](https://itecbcn.proofhub.com/bapplite/#app/todos/project-9335566085/list-269936034851)
 
 ---
 
 ## 2. Esquema de xarxa
 
-L’arquitectura del projecte està basada en:
+La infraestructura s’organitza en **subxarxes segmentades** per millorar seguretat i gestió:
 
-- Un **router central (R‑NCC)**  
-- **VLAN de serveis** per als servidors  
-- **VLANs separades** per als clients  
-- Adreçament IP separat per facilitar **escalabilitat** i **gestió**
+- Un **router central (R‑NCC)** que interconnecta totes les xarxes.
+- **DMZ** per a serveis públics (Web, DNS, FTP).  
+- **Intranet** per a serveis interns (Base de dades).  
+- **Xarxa NAT** per a clients i servidor DHCP.
 
 **Esquema de xarxa (Packet Tracer):**  
 [Descarregar esquema de xarxa](https://drive.google.com/file/d/1sruDIO3lY_b99p6khwERN0n-WELGoI5u/view?usp=sharing)
@@ -46,104 +58,136 @@ L’arquitectura del projecte està basada en:
 
 ## 3. Infraestructura desplegada
 
-Resum dels principals components de la infraestructura.  
-Els fitxers de configuració s’indiquen amb **enllaços directes** als fitxers del repositori.
+Resum dels principals rols de la infraestructura.  
+Els fitxers indicats són **enllaços directes** dins el repositori.
 
-### Router R‑NCC
+### 3.1 Components principals
 
-- Funció:  
-  - Encaminador entre subxarxes  
-  - Punt de control entre VLANs / segments
-- Configuració principal:  
+| Rol           | Host   | Serveis principals                         |
+|---------------|--------|--------------------------------------------|
+| Router        | R‑NCC  | Routing, NAT/PAT, firewall bàsic          |
+| Web Server    | W‑NCC  | Apache + PHP, aplicació web (`public/`)   |
+| DB Server     | B‑NCC  | MySQL/MariaDB, BD `Educacio`              |
+| DNS Server    | D‑NCC  | BIND, resolució noms `g5.local`           |
+| File/FTP      | F‑NCC  | FTP segur, compartició de fitxers         |
+| DHCP          | —      | Assignació IP automàtica a clients        |
+| Clients       | CLIWIN / CLILIN | Proves d’accés i serveis        |
+
+---
+
+### 3.2 Router R‑NCC
+
+- Funció:
+  - Encaminador entre subxarxes (DMZ, Intranet, NAT).
+  - Punt de control central (NAT, redirecció de ports).
+- Configuració principal (exemple, comandes i IPs):
   [`router_r-ncc.conf`](files/router_r-ncc.conf)
 
 ---
 
-### DHCP Server
+### 3.3 DHCP Server
 
-- Funció:  
-  - Assignació dinàmica d'adreces IP  
-  - Reserves per a màquines específiques
-- Configuració principal:  
+- Funció:
+  - Assignació dinàmica d’adreces IP.
+  - Reserves per a clients específics (CLIWIN, CLILIN).
+- Configuració actual:
   [`dhcpd.conf`](files/dhcp/dhcpd.conf)
 
 ---
 
-### Database Server (B‑NCC — MySQL/MariaDB)
+### 3.4 Database Server (B‑NCC — MySQL/MariaDB)
 
-- Funció:  
-  - Hostatge de la base de dades `Educacio`  
-  - Execució d’scripts d’inicialització  
-  - Gestió de còpies de seguretat
+- Funció:
+  - Hostatge de la base de dades **`Educacio`**.
+  - Suport a l’aplicació web (consultes, filtres, etc.).
 - Fitxers principals:
-  - Script d’inicialització:  
+  - Script d’inicialització de taules i dades:  
     [`mysql_init.sql`](files/mysql_init.sql)
-  - Backup de base de dades:  
+  - Còpia de seguretat de la BD:  
     [`db_backup.sql`](files/db_backup.sql)
 
 ---
 
-### Web Server (W‑NCC)
-
-- Funció:  
-  - Servir l’aplicació web (DocumentRoot: `public/`)  
-  - Connexió amb la base de dades `Educacio`
-- Configuració principal:
-  - Config webserver (exemple genèric):  
-    [`webserver_config.conf`](files/webserver_config.conf)
-  - VirtualHost Apache per al domini local:  
-    [`equipaments.conf`](files/apache2/equipaments.conf)
-
----
-
-### File Server (F‑NCC)
+### 3.5 Web Server (W‑NCC)
 
 - Funció:
-  - Compartició de fitxers (FTP / altres serveis de fitxers)
+  - Servir l’aplicació web (DocumentRoot: `public/`).
+  - Gestionar peticions HTTP/HTTPS.
+- Fitxers de configuració:
+  - Configuració genèrica de servidor web (exemple):  
+    [`webserver_config.conf`](files/webserver_config.conf)
+  - VirtualHost Apache per a `g5.local`:  
+    [`equipaments.conf`](files/apache2/equipaments.conf)
+
+Lògica d’aplicació (exemple de connexió a la BD):  
+[`config.php`](public/includes/config.php)
 
 ---
 
-### Clients de prova
+### 3.6 File Server (F‑NCC)
 
-- **CLIWIN**: client Windows (DHCP, accés a recursos de xarxa)  
-- **CLILIN**: client Linux (DHCP o IP estàtica, proves de connectivitat)
+- Funció:
+  - Compartició de fitxers (FTP, possiblement SMB).
+  - Útil per pujar/baixar fitxers relacionats amb el projecte.
 
 ---
 
-## 4. Desplegament inicial (demo)
+### 3.7 Clients de prova
 
-Apartat pensat perquè qualsevol administrador pugui desplegar ràpidament una **demo** en un entorn de proves senzill (un sol servidor o màquina virtual).
+- **CLIWIN**: client Windows per provar:
+  - DHCP, resolució DNS, accés web, FTP.
+- **CLILIN**: client Linux per provar:
+  - DHCP/IP estàtica, ping, traceroute, accés a serveis.
 
-> Per a una configuració completa per rols (R‑NCC, W‑NCC, B‑NCC, etc.) ves al  
-> **[Manual d’Administrador](docs/ADMIN_MANUAL.md)**.
+---
+
+## 4. Desplegament inicial (demo ràpida)
+
+> Objectiu: desplegar una **demo funcional** en un **únic servidor Linux** (Apache + PHP + MySQL) per provar l’aplicació web i la BD sense muntar tota la topologia de xarxa.
+
+Per desplegament complet amb rols separats (R‑NCC, W‑NCC, B‑NCC, etc.), consulta el  
+**[Manual d’Administrador](docs/ADMIN_MANUAL.md)**.
 
 ### 4.1 Requisits bàsics
 
-- Servidor **Linux** (Ubuntu/Debian recomanat) o màquina virtual  
-- Accés d’**administrador** (SSH/terminal)  
-- Connexió a Internet  
-- Fitxer [`db_backup.sql`](files/db_backup.sql) per carregar dades  
+- Servidor **Linux** (Ubuntu/Debian recomanat) o màquina virtual.
+- Accés d’**administrador** (SSH/terminal).
+- Connexió a Internet.
+- Fitxer [`db_backup.sql`](files/db_backup.sql) accessible (forma part del repo).
 
 ---
 
-### 4.2 Passos ràpids de desplegament
+### 4.2 Passos ràpids
 
-#### 1) Clonar el repositori al directori públic del servidor web
+#### 1) Clonar el repositori
 
 ```bash
 sudo git clone https://github.com/AlbertoTrujillo-ITB2425/2526-P0.0-ASIXc2BC-G05.git /var/www/html
 ```
 
-#### 2) Instal·lar el mínim necessari (Apache, PHP, MySQL)
+> Si `/var/www/html` ja conté fitxers, buida o ajusta el path abans de clonar.
+
+---
+
+#### 2) Instal·lar Apache, PHP i MySQL
 
 ```bash
 sudo apt update
 sudo apt install -y apache2 php php-mysql mysql-server git
 ```
 
-#### 3) Crear la base de dades i l’usuari per a la demo
+Comprova que el servei Apache està actiu:
 
-> La contrasenya és d’exemple. **Canvia-la en entorns reals.**
+```bash
+sudo systemctl status apache2
+```
+
+---
+
+#### 3) Crear la base de dades i l’usuari
+
+> Les credencials que es mostren són **exclusivament per a demo/laboratori**.  
+> En entorns reals, cal canviar-les.
 
 ```bash
 sudo mysql -u root -p <<'SQL'
@@ -154,14 +198,18 @@ FLUSH PRIVILEGES;
 SQL
 ```
 
-#### 4) Importar dades a la base de dades
+---
+
+#### 4) Importar les dades
 
 ```bash
 mysql -u bchecker -p Educacio < files/db_backup.sql
 # Contrasenya: bchecker121
 ```
 
-#### 5) Configurar Apache i HTTPS bàsic per a la demo
+---
+
+#### 5) Configurar Apache (VirtualHost + HTTPS de prova)
 
 ```bash
 sudo cp files/apache2/equipaments.conf /etc/apache2/sites-available/equipaments.conf
@@ -170,72 +218,85 @@ sudo a2enmod ssl headers rewrite
 sudo systemctl reload apache2
 ```
 
-Generar un certificat **autofirmat** per a proves:
+Generar certificat **autofirmat**:
 
 ```bash
 sudo openssl req -x509 -newkey rsa:4096 -keyout /etc/ssl/private/equipaments.key \
   -out /etc/ssl/certs/equipaments.crt -days 365 -nodes
 ```
 
-Comprova que els camins del certificat (`equipaments.crt` / `equipaments.key`) coincideixen amb els definits a  
-[`equipaments.conf`](files/apache2/equipaments.conf).
+- Revisa que els camins dels certificats a  
+  [`equipaments.conf`](files/apache2/equipaments.conf)  
+  coincideixin amb els fitxers creats.
+
+---
 
 #### 6) Comprovació final
 
-- Obre un navegador i accedeix a:  
-  - `http://<IP-del-servidor>`  
+- Obre un navegador i accedeix a:
+  - `http://<IP-del-servidor>`
   - o `https://<domini-o-IP>`
 
-- Si hi ha problemes:
-  - Revisa els logs d’Apache: `/var/log/apache2/error.log`
+- Si no respon:
+  - Revisa Apache: `/var/log/apache2/error.log`
+  - Comprova el firewall (p. ex. `ufw`) i permet `80/tcp` i `443/tcp`.
 
-> **Nota:** Aquest procediment està pensat per a **entorns de proves**. En entorns productius cal:  
-> - Canviar contrasenyes per defecte  
-> - Restringir l’accés a la base de dades  
-> - Utilitzar certificats vàlids (p. ex. Let’s Encrypt)  
-> - Aplicar polítiques de seguretat adequades (firewall, actualitzacions, etc.)
+> Recomanació: documentar la IP i el domini utilitzat i afegir-ho al **hosts** del client per facilitar proves (p. ex. `g5.cat`).
 
 ---
 
 ## 5. Manuals i documentació
 
-Per mantenir aquest README senzill i visual, la documentació detallada s’ha separat en manuals específics:
+Per evitar sobrecarregar aquest README, la documentació detallada es troba en fitxers específics:
 
-- **Guia per administradors (admins)**  
-  [`ADMIN_MANUAL.md`](docs/ADMIN_MANUAL.md)  
-  Conté:
-  - Configuració avançada de xarxa i serveis  
-  - Gestió de còpies de seguretat  
-  - Manteniment de l’aplicació i dels servidors  
+### 5.1 Guia per administradors
 
-- **Guia per usuaris (clients)**  
-  [`CLIENT_MANUAL.md`](docs/CLIENT_MANUAL.md)  
-  Conté:
-  - Com accedir a l’aplicació  
-  - Funcionament bàsic de la interfície  
-  - Problemes típics i solucions senzilles
+[`ADMIN_MANUAL.md`](docs/ADMIN_MANUAL.md)
 
----
+Inclou:
 
-## 6. Proves de Funcionalitat
-
-| Servei       | Descripció                                               | Comprovant |
-|--------------|-----------------------------------------------------------|------------|
-| Router       | Prova que té connectivitat amb tots els dispositius.     | (sense imatge) |
-| DHCP         | `ipconfig /renew` a Windows per comprovar que respon.    | <img src="https://github.com/user-attachments/assets/0fa7feb0-9d64-49b8-a9be-1ba97135d521" alt="DHCP" width="400" /> |
-| SSH          | Accés SSH des d'una altra màquina.                       | <img src="https://github.com/user-attachments/assets/12294633-81be-40ae-a520-f143ecceec5f" alt="SSH" width="400" /> |
-| Base de Dades| Veure que existeix la BD i mostrar les taules.           | <img src="https://github.com/user-attachments/assets/a4668b46-e030-4504-a653-2446b3f09c33" alt="Base de Dades" width="400" /> |
-| Web          | Accedir al domini des d'una altra màquina.               | <img src="https://github.com/user-attachments/assets/e07be053-3257-40ec-9803-fafe2e0ef14e" alt="Web" width="400" /> |
-| FTP          | Pujar algun fitxer al servidor.                          | <img src="https://github.com/user-attachments/assets/c432403f-5f0e-43bf-b722-2f60fedc9b51" alt="FTP" width="400" /> |
+- Configuració detallada de:
+  - Router R‑NCC (routing, NAT, iptables).
+  - DHCP, DNS (BIND), FTP, Web, Base de dades.
+- Configuració de firewall (`ufw`/iptables).
+- Scripts de monitorització i backup.
+- Taula-resum d’IP i rols.
+- Explicació de la normalització de la BD.
 
 ---
 
-## 7. Integrar MySQL al web i proves de consulta
+### 5.2 Guia per usuaris finals
 
-Per poder integrar MySQL amb PHP cal proporcionar les dades de connexió en un fitxer de configuració PHP.  
-En aquest projecte s’utilitza:
+[`CLIENT_MANUAL.md`](docs/CLIENT_MANUAL.md)
 
-[`public/includes/config.php`](public/includes/config.php)
+Inclou:
+
+- Com accedir a l’aplicació (`https://g5.cat`).
+- Com utilitzar les funcionalitats de cerca i filtratge.
+- Problemes habituals i solucions bàsiques (connexió, IP, etc.).
+
+---
+
+## 6. Proves de funcionalitat
+
+Taula de proves bàsiques amb captures:
+
+| Servei       | Descripció                                           | Comprovació (imatge) |
+|--------------|-------------------------------------------------------|----------------------|
+| Router       | Connectivitat entre tots els segments de xarxa.      | (sense imatge)       |
+| DHCP         | `ipconfig /renew` a Windows per comprovar respostes. | <img src="https://github.com/user-attachments/assets/0fa7feb0-9d64-49b8-a9be-1ba97135d521" alt="DHCP" width="400" /> |
+| SSH          | Accés per SSH des d'una altra màquina.               | <img src="https://github.com/user-attachments/assets/12294633-81be-40ae-a520-f143ecceec5f" alt="SSH" width="400" /> |
+| Base de Dades| Validar existència de la BD i llistat de taules.     | <img src="https://github.com/user-attachments/assets/a4668b46-e030-4504-a653-2446b3f09c33" alt="Base de Dades" width="400" /> |
+| Web          | Accedir al domini des d'un client extern.            | <img src="https://github.com/user-attachments/assets/e07be053-3257-40ec-9803-fafe2e0ef14e" alt="Web" width="400" /> |
+| FTP          | Pujar un fitxer al servidor amb credencials vàlides. | <img src="https://github.com/user-attachments/assets/c432403f-5f0e-43bf-b722-2f60fedc9b51" alt="FTP" width="400" /> |
+
+---
+
+## 7. Integració MySQL–PHP i proves de consulta
+
+La configuració de connexió a la BD es centralitza a:
+
+[`config.php`](public/includes/config.php)
 
 ```php
 <?php require_once "includes/header.php"; ?>
@@ -243,7 +304,7 @@ En aquest projecte s’utilitza:
 // includes/config.php
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
-$host = '192.168.5.80';
+$host = 'localhost';
 $user = 'bchecker';
 $pass = 'bchecker121';
 $db   = 'Educacio';
@@ -257,22 +318,42 @@ try {
 ?>
 ```
 
-Amb aquesta configuració l’aplicació pot mostrar les taules de la base de dades **`Educacio`**.
+A partir d’aquesta connexió, les pàgines PHP poden:
+
+- Llistar centres.
+- Aplicar filtres (nom, districte, tipus…).
+- Fer consultes sobre taules normalitzades (p. ex. `Centres`, `Adreces`, `Filtres`).
+
+> En entorns productius es recomana:
+> - Configurar l’usuari de BD amb **mínims privilegis**.
+> - Utilitzar variables d’entorn o fitxers de config fora del DocumentRoot.
+> - Activar logs d’errors PHP limitats i protegits.
 
 ---
 
 ## 8. Bibliografia i referències
 
-- **Mostrar dades MySQL amb PHP:**  
-  [Tutorial de SiteGround](https://www.siteground.es/tutoriales/php-mysql/mostrar-datos-tablas-mysql/)
+- Mostrar dades MySQL amb PHP:  
+  [SiteGround: Mostrar dades de taules MySQL amb PHP](https://www.siteground.es/tutoriales/php-mysql/mostrar-datos-tablas-mysql/)
 
-- **Configurar un router Linux (IP forwarding):**  
-  [Guia Deephacking](https://deephacking.tech/configurar-linux-para-que-actue-como-router-ip-forwarding/)
+- Configurar un router Linux (IP forwarding):  
+  [Deephacking: Configurar Linux com a router (IP forwarding)](https://deephacking.tech/configurar-linux-para-que-actue-como-router-ip-forwarding/)
 
-- **Desplegar servidor FTP en Ubuntu:**  
-  [Guia IONOS — instal·lació i configuració FTP](https://www.ionos.com/es-us/digitalguide/servidores/configuracion/servidor-ftp-en-ubuntu-instalacion-y-configuracion/)
+- Desplegar servidor FTP en Ubuntu:  
+  [IONOS: Servidor FTP en Ubuntu — instal·lació i configuració](https://www.ionos.com/es-us/digitalguide/servidores/configuracion/servidor-ftp-en-ubuntu-instalacion-y-configuracion/)
 
-- **Configurar Servidor Web amb Domini Local:**  
-  [Com configurar un domini local amb Apache](https://www.digitalocean.com/community/tutorials/how-to-set-up-apache-virtual-hosts-on-ubuntu-18-04-es/)
+- Configurar servidor Web amb domini local:  
+  [DigitalOcean: Apache Virtual Hosts a Ubuntu 18.04 (ES)](https://www.digitalocean.com/community/tutorials/how-to-set-up-apache-virtual-hosts-on-ubuntu-18-04-es)
+
+- Instalar mysql a Ubuntu Server
+  [InstalarMySQL al Ubuntu](https://www.digitalocean.com/community/tutorials/how-to-install-mysql-on-ubuntu-20-04-es)
+
+- Manual PHP
+  [Manual General PHP](https://www.php.net/manual/es/)
+
+- Manual Apache
+  [Manual com configurar Apache](https://httpd.apache.org/docs/)
+
+  
 
 ---
