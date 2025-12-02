@@ -7,6 +7,8 @@ Sistema d’informació d’**equipaments educatius** desplegat sobre una infrae
 > **[Manual d’Administrador](docs/ADMIN_MANUAL.md)** i el  
 > **[Manual d’Usuari](docs/CLIENT_MANUAL.md)**.
 
+> **[Presentacio_Final](https://docs.google.com/presentation/d/1WNHkZZ2Rpi3AAgOnP3FXPNilvurJV2-cIBZZS1WF31w/edit?usp=sharing)** 
+
 ---
 
 ## Índex
